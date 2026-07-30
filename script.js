@@ -107,7 +107,7 @@ document.querySelectorAll("[data-reveal]").forEach((el) => {
     opacity: 0,
     duration: 0.9,
     ease: "expo.out",
-    scrollTrigger: { trigger: el, start: "top 88%" },
+    scrollTrigger: { trigger: el, start: "top 88%", once: true },
   });
 });
 
@@ -117,7 +117,7 @@ document.querySelectorAll(".section-title, .contact-title").forEach((title) => {
     duration: 0.9,
     ease: "expo.out",
     stagger: 0.02,
-    scrollTrigger: { trigger: title, start: "top 85%" },
+    scrollTrigger: { trigger: title, start: "top 85%", once: true },
   });
 });
 
@@ -128,8 +128,66 @@ gsap.utils.toArray(".card").forEach((card, i) => {
     duration: 0.9,
     ease: "expo.out",
     delay: i * 0.06,
-    scrollTrigger: { trigger: ".cards", start: "top 82%" },
+    scrollTrigger: { trigger: ".cards", start: "top 82%", once: true },
   });
+});
+
+// The webfont swap (font-display: swap) reflows text after ScrollTrigger has
+// already cached pixel positions, which can make a fast Lenis scroll skip an
+// onEnter entirely and leave that element stuck invisible. Recompute once
+// fonts settle, and again shortly after in case late layout shifts happen.
+document.fonts.ready.then(() => ScrollTrigger.refresh());
+window.addEventListener("load", () => setTimeout(() => ScrollTrigger.refresh(), 300));
+
+// Belt-and-suspenders: anything that scrolls into view but is still invisible
+// after a beat gets forced visible outright, regardless of why the entrance
+// tween didn't fire. Decorative motion must never be able to permanently hide
+// real content.
+const revealSafetyNet = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      const el = entry.target;
+      setTimeout(() => {
+        if (parseFloat(getComputedStyle(el).opacity) < 0.05) {
+          gsap.to(el, { opacity: 1, x: 0, y: 0, duration: 0.4, ease: "power2.out" });
+        }
+        el.querySelectorAll(".char").forEach((ch) => {
+          if (getComputedStyle(ch).transform.includes("118") || ch.style.transform) {
+            gsap.to(ch, { yPercent: 0, duration: 0.4 });
+          }
+        });
+      }, 1400);
+    });
+  },
+  { threshold: 0.1 }
+);
+
+document
+  .querySelectorAll("[data-reveal], .card, .section-title, .contact-title")
+  .forEach((el) => revealSafetyNet.observe(el));
+
+// Bars animate width, not opacity, so they need their own stuck check against
+// the percentage authored in the markup.
+const barSafetyNet = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      const bar = entry.target;
+      const target = bar.dataset.width;
+      setTimeout(() => {
+        if (getComputedStyle(bar).width === "0px") {
+          gsap.to(bar, { width: target, duration: 0.5, ease: "power2.out" });
+        }
+      }, 1400);
+    });
+  },
+  { threshold: 0.1 }
+);
+
+document.querySelectorAll("[data-bar]").forEach((bar) => {
+  bar.dataset.width = bar.style.width;
+  barSafetyNet.observe(bar);
 });
 
 /* Language bars fill on scroll (width comes from markup, so no-JS still reads right) */
@@ -146,7 +204,7 @@ document.querySelectorAll("[data-bar]").forEach((bar, i) => {
       ease: "expo.out",
       delay: i * 0.12,
       immediateRender: false,
-      scrollTrigger: { trigger: ".langs", start: "top 84%" },
+      scrollTrigger: { trigger: ".langs", start: "top 84%", once: true },
     }
   );
 });

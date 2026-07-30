@@ -396,6 +396,12 @@ body.is-loaded .loader { display: none; }
   justify-content: center;
   padding: 104px 0 52px;
   position: relative;
+  overflow: hidden;
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 2;
 }
 
 .eyebrow {
@@ -484,6 +490,7 @@ body.is-loaded .loader { display: none; }
   position: absolute;
   left: 28px;
   bottom: 26px;
+  z-index: 2;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -514,15 +521,28 @@ body.is-loaded .loader { display: none; }
   60%, 100% { transform: translateX(100%); }
 }
 
-/* Marquee */
+/* Marquee: a diagonal band crossing the hero instead of a separate horizontal
+   strip. It stays in normal flow (pushing the title and the meta block apart
+   with real margin) rather than being absolutely positioned over them —
+   layout-jitter-proof clearance instead of chasing exact pixel gaps against
+   content whose position shifts slightly between loads (webfont swap etc).
+   The vertical margin comfortably exceeds the rotation's own visual sweep
+   (~36px per side at this width/angle), and the full-bleed width trick
+   (100vw + negative margin) breaks it out of .wrap's centered column. */
 
-.marquee {
+.marquee-diagonal {
+  position: relative;
+  width: 106vw;
+  margin: 56px 0 56px calc(50% - 53vw);
+  transform: rotate(-3deg);
+  transform-origin: center;
   overflow: hidden;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   background: var(--marquee-bg);
   color: var(--marquee-ink);
-  padding: 16px 0;
+  padding: 8px 0;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.12);
 }
 
 .marquee-track {
@@ -535,7 +555,7 @@ body.is-loaded .loader { display: none; }
 
 .marquee-track span {
   font-family: "Bricolage Grotesque", sans-serif;
-  font-size: clamp(20px, 3vw, 34px);
+  font-size: clamp(14px, 1.8vw, 20px);
   font-weight: 800;
   letter-spacing: -0.03em;
   white-space: nowrap;
@@ -553,13 +573,43 @@ body.is-loaded .loader { display: none; }
 
 .section-head { margin-bottom: 48px; }
 
+/* Right-aligned and narrower — set against #stack's left-aligned, wide head
+   so the page doesn't repeat the same centred block for every section. */
+@media (min-width: 760px) {
+  #approach .section-head {
+    margin-left: auto;
+    max-width: 480px;
+    text-align: right;
+  }
+}
+
 .section-index {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.12em;
   color: var(--accent-text);
   text-transform: uppercase;
   margin-bottom: 18px;
+}
+
+.section-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  /* accent-text, not accent: the same 2.9:1-on-cream problem the card labels
+     had, just inverted (light text on a too-bright fill this time). */
+  background: var(--accent-text);
+  color: var(--bg);
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0;
 }
 
 .section-title { font-size: clamp(34px, 6.4vw, 82px); }
@@ -571,84 +621,79 @@ body.is-loaded .loader { display: none; }
   color: var(--ink-soft);
 }
 
-/* Cards */
+/* Cards: an offset list with the number as a large marker, not an even grid
+   of tiles — the tile-grid was the one piece of this page that read most
+   like the reference's stack section. */
 
-/* Fixed column counts: auto-fit left a single orphan card on mid-size screens. */
 .cards {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-  align-items: stretch;
-}
-
-/* Six cards: three across divides evenly, four would strand two on a second row. */
-@media (min-width: 1040px) {
-  .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-}
-
-@media (max-width: 620px) {
-  .cards { grid-template-columns: 1fr; }
+  border-top: 1px solid var(--line);
 }
 
 .card {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 22px;
-  padding: 30px 26px 26px;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.5s var(--ease), box-shadow 0.5s var(--ease);
-  transform-style: preserve-3d;
+  display: grid;
+  grid-template-columns: clamp(52px, 8vw, 92px) 1fr;
+  column-gap: 28px;
+  align-items: start;
+  padding: 42px 0;
+  border-bottom: 1px solid var(--line);
+  transition: padding-left 0.5s var(--ease);
 }
 
-.card::after {
-  content: "";
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  height: 3px;
-  background: var(--accent);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.55s var(--ease);
+/* Alternate rows step in from the right so the list reads as a staggered
+   column, not a uniform stack. */
+.card:nth-child(even) {
+  margin-left: clamp(0px, 9vw, 104px);
 }
 
-.card:hover {
-  box-shadow: 0 22px 50px var(--card-shadow);
-}
-
-.card:hover::after { transform: scaleX(1); }
+.card:hover { padding-left: 14px; }
 
 .card-num {
+  grid-column: 1;
+  grid-row: 1 / -1;
   font-family: "Bricolage Grotesque", sans-serif;
-  font-size: 12px;
+  font-size: clamp(30px, 4.4vw, 52px);
   font-weight: 800;
+  line-height: 1;
   color: var(--accent-text);
-  letter-spacing: 0.06em;
 }
 
 .card h3 {
-  font-size: 21px;
-  margin: 12px 0 12px;
+  grid-column: 2;
+  font-size: clamp(20px, 2.4vw, 25px);
+  margin: 0 0 12px;
 }
 
 .card-note {
+  grid-column: 2;
   font-size: 14px;
   line-height: 1.6;
   color: var(--ink-soft);
-  margin-bottom: 20px;
+  max-width: 480px;
+  margin-bottom: 18px;
 }
 
-/* No margin-top:auto here: pushing the list down opened a hole mid-card
-   whenever a neighbour's description wrapped to one more line. */
+.card ul {
+  grid-column: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px 10px;
+}
 
 .card li {
-  padding: 9px 0;
-  border-top: 1px solid var(--line);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 15px;
   color: var(--ink-soft);
-  font-size: 14.5px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+@media (max-width: 700px) {
+  .card {
+    grid-template-columns: 40px 1fr;
+    column-gap: 16px;
+  }
+  .card:nth-child(even) { margin-left: 0; }
 }
 
 /* Languages */
@@ -735,6 +780,15 @@ body.is-loaded .loader { display: none; }
 
 .approach-row:hover { padding-left: 14px; }
 
+/* Same staggered rhythm as the cards list above it. */
+.approach-row:nth-child(even) {
+  margin-left: clamp(0px, 6vw, 64px);
+}
+
+@media (max-width: 700px) {
+  .approach-row:nth-child(even) { margin-left: 0; }
+}
+
 .approach-num {
   font-family: "Bricolage Grotesque", sans-serif;
   font-size: 14px;
@@ -766,6 +820,21 @@ body.is-loaded .loader { display: none; }
   max-width: 460px;
   font-size: 17px;
   margin-bottom: 36px;
+}
+
+/* Title stays left and wide, spanning two rows; the reply block sits offset
+   to the right instead of stacking directly underneath the title. */
+@media (min-width: 860px) {
+  .contact {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    column-gap: 40px;
+    align-items: start;
+  }
+  .contact .section-index { grid-column: 1; grid-row: 1; }
+  .contact-title { grid-column: 1; grid-row: 2 / span 2; margin-bottom: 0; }
+  .contact .lede { grid-column: 2; grid-row: 2; margin-top: 6px; }
+  .contact .cta-row { grid-column: 2; grid-row: 3; margin-top: 18px; align-self: start; }
 }
 
 /* Footer */

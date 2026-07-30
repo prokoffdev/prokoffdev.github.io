@@ -7,104 +7,145 @@
 <meta name="description" content="Олег Прокофьев — создание сайтов, дизайн интерфейсов и лёгкий бэкенд.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+<div class="cursor" aria-hidden="true"></div>
+<div class="cursor-ring" aria-hidden="true"></div>
+
+<div class="loader" aria-hidden="true">
+  <span class="loader-count">0</span>
+</div>
+
+<div class="bg-field" aria-hidden="true">
+  <span class="blob blob-1"></span>
+  <span class="blob blob-2"></span>
+  <span class="blob blob-3"></span>
+  <span class="grain"></span>
+</div>
+
 <header class="site-header">
   <div class="wrap header-inner">
-    <a href="#top" class="logo">Олег Прокофьев</a>
+    <a href="#top" class="logo" data-magnet>ОП<span class="logo-dot"></span></a>
     <nav class="nav" aria-label="Разделы">
-      <a href="#stack">Навыки</a>
-      <a href="#approach">Подход</a>
-      <a href="#contact">Контакты</a>
+      <a href="#stack" data-magnet>Навыки</a>
+      <a href="#approach" data-magnet>Подход</a>
+      <a href="#contact" data-magnet>Контакты</a>
     </nav>
-    <a class="btn btn-accent header-cta" href="https://t.me/oleherrr_kp" target="_blank" rel="noopener">Написать</a>
+    <a class="btn btn-solid header-cta" href="https://t.me/oleherrr_kp" target="_blank" rel="noopener" data-magnet>Написать</a>
   </div>
 </header>
 
 <main id="top">
 
-  <section class="hero wrap">
-    <p class="eyebrow">Открыт к проектам · Удалённо</p>
-    <h1>Олег Прокофьев</h1>
-    <p class="role">Веб-разработчик <span class="dot">·</span> Дизайнер</p>
-    <p class="lede">
-      Делаю сайты целиком: от макета в Figma до готовой вёрстки и лёгкого бэкенда.
-      Мне важно, чтобы интерфейс был понятным и аккуратным, а не просто «работал» —
-      и чтобы за ним стоял код, в котором не стыдно копаться через полгода.
-    </p>
-    <div class="cta-row">
-      <a class="btn btn-accent" href="https://t.me/oleherrr_kp" target="_blank" rel="noopener">Telegram</a>
-      <a class="btn btn-outline" href="mailto:olegprokofev2002@gmail.com">E-mail</a>
+  <section class="hero">
+    <div class="wrap hero-inner">
+      <p class="eyebrow" data-reveal><span class="pulse"></span>Открыт к проектам · Удалённо</p>
+
+      <h1 class="hero-title">
+        <span class="line" data-split>Олег</span>
+        <span class="line line-shift" data-split>Прокофьев</span>
+      </h1>
+
+      <div class="hero-meta">
+        <p class="role" data-reveal>Веб-разработчик <em>·</em> Дизайнер</p>
+        <p class="lede" data-reveal>
+          Делаю сайты целиком — от макета в Figma до готовой вёрстки
+          и лёгкого бэкенда.
+        </p>
+        <div class="cta-row" data-reveal>
+          <a class="btn btn-solid" href="https://t.me/oleherrr_kp" target="_blank" rel="noopener" data-magnet>
+            <span>Telegram</span>
+            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M1 8h13M9 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a class="btn btn-ghost" href="mailto:olegprokofev2002@gmail.com" data-magnet>E-mail</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="scroll-hint" aria-hidden="true">
+      <span>Листай</span>
+      <i></i>
     </div>
   </section>
 
-  <div class="marquee wrap" aria-hidden="true">
+  <div class="marquee" data-marquee aria-hidden="true">
     <div class="marquee-track">
-      <span>Figma</span><span>HTML</span><span>CSS</span><span>JavaScript</span><span>React</span><span>Node.js</span><span>UI/UX</span><span>Git</span>
+      <span>Figma</span><i>◆</i><span>HTML</span><i>◆</i><span>CSS</span><i>◆</i><span>JavaScript</span><i>◆</i><span>React</span><i>◆</i><span>Node.js</span><i>◆</i><span>UI/UX</span><i>◆</i><span>Git</span><i>◆</i>
+      <span>Figma</span><i>◆</i><span>HTML</span><i>◆</i><span>CSS</span><i>◆</i><span>JavaScript</span><i>◆</i><span>React</span><i>◆</i><span>Node.js</span><i>◆</i><span>UI/UX</span><i>◆</i><span>Git</span><i>◆</i>
     </div>
   </div>
 
   <section id="stack" class="section wrap">
-    <p class="section-index">01 — Инструменты</p>
-    <h2>Чем пользуюсь в работе</h2>
+    <header class="section-head">
+      <p class="section-index" data-reveal>01 — Инструменты</p>
+      <h2 class="section-title" data-split>Чем пользуюсь<br>в работе</h2>
+    </header>
+
     <div class="cards">
-      <article class="card">
+      <article class="card" data-reveal data-tilt>
+        <span class="card-num">01</span>
         <h3>Дизайн</h3>
         <ul>
           <li>Figma</li>
-          <li>UI/UX-прототипирование</li>
+          <li>UI/UX-прототипы</li>
           <li>Дизайн-системы</li>
-          <li>Адаптивная вёрстка макетов</li>
+          <li>Адаптивные макеты</li>
         </ul>
       </article>
-      <article class="card">
+      <article class="card" data-reveal data-tilt>
+        <span class="card-num">02</span>
         <h3>Frontend</h3>
         <ul>
           <li>HTML / CSS</li>
           <li>JavaScript</li>
           <li>React</li>
-          <li>Анимации и интерактив</li>
+          <li>Анимации</li>
         </ul>
       </article>
-      <article class="card">
+      <article class="card" data-reveal data-tilt>
+        <span class="card-num">03</span>
         <h3>Backend</h3>
         <ul>
           <li>Node.js</li>
           <li>REST API</li>
           <li>Базы данных</li>
-          <li>Деплой и хостинг</li>
+          <li>Деплой</li>
         </ul>
       </article>
-      <article class="card">
+      <article class="card" data-reveal data-tilt>
+        <span class="card-num">04</span>
         <h3>Инструменты</h3>
         <ul>
           <li>Git / GitHub</li>
           <li>VS Code</li>
-          <li>Figma</li>
-          <li>Chrome DevTools</li>
+          <li>DevTools</li>
+          <li>Vite</li>
         </ul>
       </article>
     </div>
   </section>
 
   <section id="approach" class="section wrap">
-    <p class="section-index">02 — Как я работаю</p>
-    <h2>На что обращаю внимание</h2>
-    <div class="approach-grid">
-      <article class="approach-item">
+    <header class="section-head">
+      <p class="section-index" data-reveal>02 — Как я работаю</p>
+      <h2 class="section-title" data-split>На что обращаю<br>внимание</h2>
+    </header>
+
+    <div class="approach-list">
+      <article class="approach-row" data-reveal>
         <span class="approach-num">01</span>
         <h3>Дизайн и код — в одних руках</h3>
         <p>Веду проект от макета до готового сайта сам, поэтому идея не теряется на стыке дизайна и вёрстки.</p>
       </article>
-      <article class="approach-item">
+      <article class="approach-row" data-reveal>
         <span class="approach-num">02</span>
-        <h3>Простой и отзывчивый интерфейс</h3>
-        <p>Сайт должен одинаково хорошо читаться на телефоне и на десктопе, без лишней анимации и хаоса.</p>
+        <h3>Живой, но не шумный интерфейс</h3>
+        <p>Движение помогает вести взгляд, а не отвлекает. Анимация ставится там, где она объясняет структуру.</p>
       </article>
-      <article class="approach-item">
+      <article class="approach-row" data-reveal>
         <span class="approach-num">03</span>
         <h3>Бэкенд ровно там, где нужен</h3>
         <p>Не усложняю там, где хватает простого API и понятной структуры — легче поддерживать и разбираться.</p>
@@ -113,15 +154,18 @@
   </section>
 
   <section id="contact" class="section wrap contact">
-    <p class="section-index">03 — Контакты</p>
-    <h2>Расскажите, что нужно сделать</h2>
-    <p class="lede">
-      Быстрее всего отвечаю в Telegram. Пишите, если нужен сайт, лендинг
-      или интерфейс — от идеи и дизайна до готовой рабочей версии.
+    <p class="section-index" data-reveal>03 — Контакты</p>
+    <h2 class="contact-title" data-split>Давайте сделаем</h2>
+    <p class="lede" data-reveal>
+      Быстрее всего отвечаю в Telegram. Напишите, если нужен сайт,
+      лендинг или интерфейс — от идеи до готовой версии.
     </p>
-    <div class="cta-row">
-      <a class="btn btn-accent" href="https://t.me/oleherrr_kp" target="_blank" rel="noopener">Telegram</a>
-      <a class="btn btn-outline" href="mailto:olegprokofev2002@gmail.com">E-mail</a>
+    <div class="cta-row" data-reveal>
+      <a class="btn btn-solid btn-lg" href="https://t.me/oleherrr_kp" target="_blank" rel="noopener" data-magnet>
+        <span>Написать в Telegram</span>
+        <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M1 8h13M9 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a class="btn btn-ghost btn-lg" href="mailto:olegprokofev2002@gmail.com" data-magnet>olegprokofev2002@gmail.com</a>
     </div>
   </section>
 
@@ -131,11 +175,16 @@
   <div class="wrap footer-inner">
     <span>Олег Прокофьев · Веб-разработка и дизайн</span>
     <div class="footer-links">
-      <a href="https://t.me/oleherrr_kp" target="_blank" rel="noopener">Telegram</a>
-      <a href="mailto:olegprokofev2002@gmail.com">Почта</a>
+      <a href="https://t.me/oleherrr_kp" target="_blank" rel="noopener" data-magnet>Telegram</a>
+      <a href="mailto:olegprokofev2002@gmail.com" data-magnet>Почта</a>
     </div>
   </div>
 </footer>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
+<script src="script.js"></script>
 
 </body>
 </html>

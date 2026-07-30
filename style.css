@@ -417,7 +417,7 @@ body.is-loaded .loader { display: none; }
   background: var(--eyebrow-bg);
   padding: 8px 16px;
   border-radius: 999px;
-  margin-bottom: 34px;
+  margin-top: 26px;
 }
 
 .pulse {
@@ -533,11 +533,18 @@ body.is-loaded .loader { display: none; }
 
 .rain-canvas {
   position: absolute;
-  /* Asymmetric on purpose: bleeding up risks painting over .eyebrow (it
-     comes before hero-title in the DOM, so the canvas would render on top
-     of it); bleeding down just sits behind .hero-meta, which paints over
-     it harmlessly since it comes after in the DOM. */
-  inset: -10% -4% -80% -4%;
+  /* Asymmetric on purpose, flipped now that .eyebrow moved below the title:
+     bleeding up is safe (nothing precedes hero-title but the hero's own
+     padding up to the sticky header, and .hero's overflow:hidden clips it
+     at that edge — the look is rain spilling out from under the header).
+     Bleeding down risks painting over .eyebrow, which now follows
+     hero-title in the DOM, so that side stays tight. */
+  inset: -170% -4% -10% -4%;
+  /* Canvas is a replaced element: without an explicit size, it falls back
+     to its own bitmap dimensions (set in JS) instead of sizing from inset,
+     which is what caused the mismatch below. */
+  width: 100%;
+  height: 100%;
   z-index: 0;
   opacity: 0.5;
   pointer-events: none;

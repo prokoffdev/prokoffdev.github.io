@@ -154,9 +154,10 @@ p {
 }
 
 .hero h1 {
-  font-size: clamp(44px, 8vw, 78px);
+  font-size: clamp(30px, 6.4vw, 78px);
   font-weight: 800;
   letter-spacing: -0.02em;
+  white-space: nowrap;
 }
 
 .role {
@@ -190,29 +191,21 @@ p {
 .marquee {
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
-  overflow: hidden;
-  padding: 20px 0;
+  padding: 20px 24px;
   margin: 40px 0 0;
 }
 
 .marquee-track {
   display: flex;
-  gap: 48px;
-  width: max-content;
-  animation: scroll 28s linear infinite;
+  flex-wrap: wrap;
+  gap: 16px 32px;
 }
 
 .marquee-track span {
   font-family: "Unbounded", sans-serif;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--muted);
-  white-space: nowrap;
-}
-
-@keyframes scroll {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
 }
 
 /* Sections */
@@ -297,26 +290,8 @@ p {
 
 /* Contact */
 
-.contact {
-  text-align: center;
-}
-
-.contact h2 {
-  max-width: none;
-  margin: 0 auto 18px;
-}
-
-.contact .section-index {
-  text-align: center;
-}
-
 .contact .lede {
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.contact .cta-row {
-  justify-content: center;
+  max-width: 560px;
 }
 
 /* Footer */

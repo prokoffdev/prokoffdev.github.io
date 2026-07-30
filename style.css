@@ -77,6 +77,14 @@ html, body {
   padding: 0;
 }
 
+html {
+  /* Mobile Safari/Chrome auto-inflate small text in narrow columns, which
+     can make a short label wrap unexpectedly even though it fits at the
+     CSS pixel size used here. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
   background: var(--bg);
   color: var(--ink);
@@ -417,7 +425,7 @@ body.is-loaded .loader { display: none; }
   background: var(--eyebrow-bg);
   padding: 8px 16px;
   border-radius: 999px;
-  margin-top: 26px;
+  margin-top: 56px;
 }
 
 .pulse {
@@ -531,23 +539,43 @@ body.is-loaded .loader { display: none; }
    fine as texture sitting behind bold display type that doesn't need to be
    parsed word-by-word. */
 
-.rain-canvas {
+/* Split into a positioning wrapper (plain div) and the canvas itself:
+   setting both `inset` and an explicit width/height on the SAME element
+   over-constrains it (top + height + bottom can't all hold), and the
+   browser was silently dropping `bottom` and clamping height to the
+   container's — which is what capped the fall short of the name. The
+   wrapper takes the inset (a non-replaced box with height:auto correctly
+   fills containerHeight - top - bottom); the canvas just fills it at 100%. */
+
+.rain-wrap {
   position: absolute;
   /* Asymmetric on purpose, flipped now that .eyebrow moved below the title:
      bleeding up is safe (nothing precedes hero-title but the hero's own
      padding up to the sticky header, and .hero's overflow:hidden clips it
      at that edge — the look is rain spilling out from under the header).
-     Bleeding down risks painting over .eyebrow, which now follows
-     hero-title in the DOM, so that side stays tight. */
-  inset: -170% -4% -10% -4%;
-  /* Canvas is a replaced element: without an explicit size, it falls back
-     to its own bitmap dimensions (set in JS) instead of sizing from inset,
-     which is what caused the mismatch below. */
+     Bleeding down is generous too, so the fall visibly continues past the
+     name instead of stopping right at it — the soft mask below fades it
+     out before it would reach .eyebrow, rather than a hard clip. */
+  top: -170%;
+  right: -4%;
+  left: -4%;
+  /* Fixed-ish rather than a percentage of the title's own height: the
+     title's font-size (and so its height) triples from mobile to wide
+     desktop via clamp(), but .eyebrow's clearance below doesn't scale with
+     it — a percentage bleed here fit on mobile and overshot into the
+     eyebrow at wider widths. */
+  bottom: calc(-1 * clamp(22px, 6vw, 40px));
+  z-index: 0;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 16%, black 68%, transparent 97%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 16%, black 68%, transparent 97%);
+}
+
+.rain-canvas {
+  display: block;
   width: 100%;
   height: 100%;
-  z-index: 0;
   opacity: 0.5;
-  pointer-events: none;
 }
 
 /* Sections */
@@ -569,12 +597,13 @@ body.is-loaded .loader { display: none; }
 .section-index {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  font-size: 12px;
+  gap: 10px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   color: var(--accent-text);
   text-transform: uppercase;
+  white-space: nowrap;
   margin-bottom: 18px;
 }
 
@@ -582,15 +611,16 @@ body.is-loaded .loader { display: none; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
+  flex: none;
   border-radius: 50%;
   /* accent-text, not accent: the same 2.9:1-on-cream problem the card labels
      had, just inverted (light text on a too-bright fill this time). */
   background: var(--accent-text);
   color: var(--bg);
   font-family: "Bricolage Grotesque", sans-serif;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
   letter-spacing: 0;
 }

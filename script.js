@@ -218,28 +218,18 @@ document.querySelectorAll("[data-bar]").forEach((bar, i) => {
   );
 });
 
-/* Marquee driven by scroll velocity */
+/* Marquee: one steady, predictable speed — no scroll-reactive acceleration */
 
 const track = document.querySelector(".marquee-track");
 if (track && !reduceMotion) {
   let half = track.scrollWidth / 2;
   let offset = 0;
-  let speed = 1.1;
+  const speed = 1.1;
 
   // Webfont swap and resize change the track width, which would break the loop seam.
   const measure = () => { half = track.scrollWidth / 2; };
   document.fonts.ready.then(measure);
   window.addEventListener("resize", measure);
-
-  lenis.on("scroll", ({ velocity }) => {
-    speed = 1.1 + Math.min(Math.abs(velocity) * 0.22, 9);
-    gsap.to(".marquee-track span", {
-      skewX: gsap.utils.clamp(-11, 11, velocity * -0.32),
-      duration: 0.5,
-      ease: "power3.out",
-      overwrite: true,
-    });
-  });
 
   gsap.ticker.add(() => {
     offset = (offset + speed) % half;

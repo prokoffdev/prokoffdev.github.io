@@ -256,13 +256,17 @@ if (rainCanvas && !reduceMotion) {
     rainAccent = cs.getPropertyValue("--accent").trim();
   }
 
+  const colGap = 30;
+
   function buildRainColumns() {
-    const count = Math.ceil(rainW / 22);
+    const count = Math.ceil(rainW / colGap);
     rainColumns = Array.from({ length: count }, (_, i) => ({
-      x: i * 22 + 11,
+      x: i * colGap + colGap / 2,
       word: (rainWords[Math.floor(Math.random() * rainWords.length)] + "   ").toUpperCase(),
       y: Math.random() * rainH * 1.6 - rainH * 0.6,
-      speed: 0.9 + Math.random() * 1.3,
+      // Slow enough to actually track a falling letter — this now sits behind
+      // the name as texture, not a strip meant to be read word by word.
+      speed: 0.28 + Math.random() * 0.4,
       len: 5 + Math.floor(Math.random() * 4),
     }));
   }
@@ -308,7 +312,7 @@ if (rainCanvas && !reduceMotion) {
       col.y += col.speed;
       if (col.y - col.len * glyphSize > rainH + glyphSize) {
         col.y = -Math.random() * rainH * 0.6;
-        col.speed = 0.9 + Math.random() * 1.3;
+        col.speed = 0.28 + Math.random() * 0.4;
         col.word = (rainWords[Math.floor(Math.random() * rainWords.length)] + "   ").toUpperCase();
       }
     });

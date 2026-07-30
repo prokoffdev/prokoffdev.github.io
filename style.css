@@ -433,12 +433,17 @@ body.is-loaded .loader { display: none; }
 }
 
 .hero-title {
+  position: relative;
   font-size: clamp(44px, 13vw, 168px);
   display: block;
   white-space: nowrap;
 }
 
-.hero-title > span { display: inline-block; }
+.hero-title > span {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+}
 .hero-title .accent { color: var(--accent-text); }
 
 .hero-who {
@@ -521,27 +526,21 @@ body.is-loaded .loader { display: none; }
   60%, 100% { transform: translateX(100%); }
 }
 
-/* Digital-rain band: same slot in the hero (in normal flow between the title
-   and the meta block, full-bleed via the 100vw trick) as the old marquee,
-   but the motion is now top-to-bottom, so no rotation this time — a tilted
-   parent would make the fall read as diagonal instead of straight down. */
-
-.rain-band {
-  position: relative;
-  width: 106vw;
-  margin: 32px 0 32px calc(50% - 53vw);
-  height: clamp(120px, 16vw, 190px);
-  overflow: hidden;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  background: var(--marquee-bg);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.12);
-}
+/* Digital rain as a backdrop behind the name itself, rather than a separate
+   strip — falling letters read as noise at speed-readable size, but work
+   fine as texture sitting behind bold display type that doesn't need to be
+   parsed word-by-word. */
 
 .rain-canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  /* Asymmetric on purpose: bleeding up risks painting over .eyebrow (it
+     comes before hero-title in the DOM, so the canvas would render on top
+     of it); bleeding down just sits behind .hero-meta, which paints over
+     it harmlessly since it comes after in the DOM. */
+  inset: -10% -4% -80% -4%;
+  z-index: 0;
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 /* Sections */

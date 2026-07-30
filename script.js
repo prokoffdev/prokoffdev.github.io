@@ -45,6 +45,15 @@ document.querySelectorAll("[data-split]").forEach(splitText);
 const loaderCount = document.querySelector(".loader-count");
 const heroChars = document.querySelectorAll(".hero-title .char");
 
+// Hidden from the very first frame, while the opaque loader still covers the
+// screen. gsap.from()'s immediateRender used to snap this state only once
+// revealHero() ran — right as the loader curtain had already slid away — so
+// the finished title flashed visible for a frame before jumping back to
+// hidden and animating in again.
+gsap.set(heroChars, { yPercent: 118 });
+gsap.set(".hero .eyebrow, .hero-meta > *", { y: 26, opacity: 0 });
+gsap.set(".site-header, .scroll-hint", { opacity: 0 });
+
 let heroRevealed = false;
 
 function revealHero() {
@@ -52,24 +61,24 @@ function revealHero() {
   heroRevealed = true;
   document.body.classList.add("is-loaded");
 
-  gsap.from(heroChars, {
-    yPercent: 118,
+  gsap.to(heroChars, {
+    yPercent: 0,
     duration: 1.1,
     ease: "expo.out",
     stagger: 0.028,
   });
 
-  gsap.from(".hero .eyebrow, .hero-meta > *", {
-    y: 26,
-    opacity: 0,
+  gsap.to(".hero .eyebrow, .hero-meta > *", {
+    y: 0,
+    opacity: 1,
     duration: 0.9,
     ease: "expo.out",
     stagger: 0.09,
     delay: 0.35,
   });
 
-  gsap.from(".site-header, .scroll-hint", {
-    opacity: 0,
+  gsap.to(".site-header, .scroll-hint", {
+    opacity: 1,
     duration: 0.8,
     ease: "power2.out",
     delay: 0.6,

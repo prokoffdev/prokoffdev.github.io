@@ -4,6 +4,8 @@
   --ink-soft: #5d564f;
   --line: rgba(20, 17, 15, 0.12);
   --accent: #ff4d17;
+  /* Darker cut of the accent: #ff4d17 on the cream page is only 2.9:1. */
+  --accent-text: #b83505;
   --accent-2: #1d4ed8;
   --card: #ffffff;
   --header-bg: rgba(242, 239, 233, 0.72);
@@ -32,6 +34,7 @@
   --ink-soft: #9b93b8;
   --line: rgba(236, 233, 245, 0.14);
   --accent: #a855f7;
+  --accent-text: #a855f7; /* already 5.2:1 on the near-black page */
   --accent-2: #6d28d9;
   --card: rgba(255, 255, 255, 0.04);
   --header-bg: rgba(5, 4, 10, 0.7);
@@ -300,6 +303,7 @@ body.is-loaded .loader { display: none; }
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  padding: 8px 0;
 }
 
 .logo-dot {
@@ -384,12 +388,13 @@ body.is-loaded .loader { display: none; }
 
 /* Hero */
 
+/* Capped so a tall screen does not leave a half-empty first screen to scroll past. */
 .hero {
-  min-height: 100svh;
+  min-height: min(100svh, 760px);
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 120px 0 60px;
+  padding: 104px 0 52px;
   position: relative;
 }
 
@@ -428,7 +433,7 @@ body.is-loaded .loader { display: none; }
 }
 
 .hero-title > span { display: inline-block; }
-.hero-title .accent { color: var(--accent); }
+.hero-title .accent { color: var(--accent-text); }
 
 .hero-who {
   display: flex;
@@ -461,7 +466,7 @@ body.is-loaded .loader { display: none; }
   letter-spacing: -0.01em;
 }
 
-.role em { color: var(--accent); font-style: normal; margin: 0 5px; }
+.role em { color: var(--accent-text); font-style: normal; margin: 0 5px; }
 
 .lede {
   max-width: 380px;
@@ -544,15 +549,15 @@ body.is-loaded .loader { display: none; }
 
 /* Sections */
 
-.section { padding: 130px 28px; }
+.section { padding: 92px 28px; }
 
-.section-head { margin-bottom: 64px; }
+.section-head { margin-bottom: 48px; }
 
 .section-index {
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.12em;
-  color: var(--accent);
+  color: var(--accent-text);
   text-transform: uppercase;
   margin-bottom: 18px;
 }
@@ -619,7 +624,7 @@ body.is-loaded .loader { display: none; }
   font-family: "Bricolage Grotesque", sans-serif;
   font-size: 12px;
   font-weight: 800;
-  color: var(--accent);
+  color: var(--accent-text);
   letter-spacing: 0.06em;
 }
 
@@ -635,7 +640,8 @@ body.is-loaded .loader { display: none; }
   margin-bottom: 20px;
 }
 
-.card ul { margin-top: auto; }
+/* No margin-top:auto here: pushing the list down opened a hole mid-card
+   whenever a neighbour's description wrapped to one more line. */
 
 .card li {
   padding: 9px 0;
@@ -693,7 +699,7 @@ body.is-loaded .loader { display: none; }
 .lang-level {
   font-size: 13px;
   font-weight: 600;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .lang-bar {
@@ -733,7 +739,7 @@ body.is-loaded .loader { display: none; }
   font-family: "Bricolage Grotesque", sans-serif;
   font-size: 14px;
   font-weight: 800;
-  color: var(--accent);
+  color: var(--accent-text);
   padding-top: 5px;
 }
 
@@ -780,9 +786,15 @@ body.is-loaded .loader { display: none; }
   font-weight: 500;
 }
 
-.footer-links { display: flex; gap: 22px; }
-.footer-links a { transition: color 0.3s var(--ease); }
-.footer-links a:hover { color: var(--accent); }
+.footer-links { display: flex; gap: 22px; align-items: center; }
+
+/* Padded so the links clear a comfortable touch target. */
+.footer-links a {
+  padding: 10px 0;
+  transition: color 0.3s var(--ease);
+}
+
+.footer-links a:hover { color: var(--accent-text); }
 
 /* Split-text setup */
 

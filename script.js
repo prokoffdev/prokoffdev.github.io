@@ -132,6 +132,25 @@ gsap.utils.toArray(".card").forEach((card, i) => {
   });
 });
 
+/* Language bars fill on scroll (width comes from markup, so no-JS still reads right) */
+
+document.querySelectorAll("[data-bar]").forEach((bar, i) => {
+  // immediateRender:false keeps the authored percentage until the tween actually
+  // starts, and the target stays a percentage so the bar survives a resize.
+  gsap.fromTo(
+    bar,
+    { width: 0 },
+    {
+      width: bar.style.width,
+      duration: 1.2,
+      ease: "expo.out",
+      delay: i * 0.12,
+      immediateRender: false,
+      scrollTrigger: { trigger: ".langs", start: "top 84%" },
+    }
+  );
+});
+
 /* Marquee driven by scroll velocity */
 
 const track = document.querySelector(".marquee-track");

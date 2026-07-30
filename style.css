@@ -545,12 +545,29 @@ body.is-loaded .loader { display: none; }
 
 .section-title { font-size: clamp(34px, 6.4vw, 82px); }
 
+.section-lede {
+  margin-top: 26px;
+  max-width: 520px;
+  font-size: 16px;
+  color: var(--ink-soft);
+}
+
 /* Cards */
 
+/* Fixed column counts: auto-fit left a single orphan card on mid-size screens. */
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
+  align-items: stretch;
+}
+
+@media (min-width: 1240px) {
+  .cards { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (max-width: 620px) {
+  .cards { grid-template-columns: 1fr; }
 }
 
 .card {
@@ -560,6 +577,8 @@ body.is-loaded .loader { display: none; }
   padding: 30px 26px 26px;
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
   transition: transform 0.5s var(--ease), box-shadow 0.5s var(--ease);
   transform-style: preserve-3d;
 }
@@ -590,9 +609,18 @@ body.is-loaded .loader { display: none; }
 }
 
 .card h3 {
-  font-size: 22px;
-  margin: 12px 0 20px;
+  font-size: 21px;
+  margin: 12px 0 12px;
 }
+
+.card-note {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  margin-bottom: 20px;
+}
+
+.card ul { margin-top: auto; }
 
 .card li {
   padding: 9px 0;
@@ -600,6 +628,72 @@ body.is-loaded .loader { display: none; }
   color: var(--ink-soft);
   font-size: 14.5px;
   font-weight: 500;
+}
+
+/* Languages */
+
+.langs {
+  margin-top: 18px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 34px 30px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 40px;
+  align-items: center;
+}
+
+.langs-head h3 {
+  font-size: 26px;
+  margin-bottom: 12px;
+}
+
+.langs-head p {
+  color: var(--ink-soft);
+  font-size: 15px;
+  max-width: 340px;
+}
+
+.langs-list {
+  display: grid;
+  gap: 24px;
+}
+
+.lang-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 11px;
+}
+
+.lang-name {
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.lang-level {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.lang-bar {
+  display: block;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.lang-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
 }
 
 /* Approach */
@@ -695,6 +789,12 @@ body.is-loaded .loader { display: none; }
     grid-template-columns: 40px 1fr;
   }
   .approach-row p { grid-column: 2; }
+
+  .langs {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .langs-head p { max-width: none; }
 }
 
 @media (max-width: 640px) {

@@ -891,6 +891,12 @@ body.is-loaded .loader { display: none; }
   display: inline-block;
   overflow: hidden;
   vertical-align: top;
+  /* Each letter is its own inline-block for the reveal animation, and
+     without this, adjacent inline-blocks can wrap at ANY boundary between
+     them — not just at an original space — breaking mid-word whenever the
+     line is a touch too wide for its container (e.g. during the instant
+     before the webfont swaps in and metrics are still the fallback font's). */
+  white-space: nowrap;
 }
 
 /* Responsive */

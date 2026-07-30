@@ -169,6 +169,151 @@ if (!reduceMotion) {
   gsap.to(".blob-3", { yPercent: -14, ease: "none", scrollTrigger: { start: 0, end: "max", scrub: 1 } });
 }
 
+/* Theme toggle */
+
+const root = document.documentElement;
+const themeToggle = document.querySelector(".theme-toggle");
+
+function syncToggle() {
+  themeToggle.setAttribute("aria-pressed", String(root.dataset.theme === "dark"));
+}
+
+syncToggle();
+
+themeToggle.addEventListener("click", () => {
+  root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
+  localStorage.setItem("theme", root.dataset.theme);
+  syncToggle();
+});
+
+// Follow the OS only while the visitor has not picked a theme themselves.
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
+  if (localStorage.getItem("theme")) return;
+  root.dataset.theme = e.matches ? "dark" : "light";
+  syncToggle();
+});
+
+/* Starfield with comets (dark theme only) */
+
+const canvas = document.querySelector(".starfield");
+const ctx = canvas.getContext("2d");
+
+let stars = [];
+let comets = [];
+let vw = 0;
+let vh = 0;
+let nextComet = 0;
+
+function buildStars() {
+  const count = Math.round((vw * vh) / 6200);
+  stars = Array.from({ length: count }, () => ({
+    x: Math.random() * vw,
+    y: Math.random() * vh,
+    r: Math.random() * 1.1 + 0.25,
+    a: Math.random() * 0.5 + 0.22,
+    sp: Math.random() * 1.7 + 0.3,
+    ph: Math.random() * Math.PI * 2,
+  }));
+}
+
+function resizeStarfield() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  vw = window.innerWidth;
+  vh = window.innerHeight;
+  canvas.width = Math.round(vw * dpr);
+  canvas.height = Math.round(vh * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  buildStars();
+}
+
+resizeStarfield();
+window.addEventListener("resize", resizeStarfield);
+
+function spawnComet() {
+  const speed = 6.5 + Math.random() * 5;
+  comets.push({
+    x: Math.random() * vw * 1.15 - vw * 0.15,
+    y: Math.random() * vh * 0.45 - vh * 0.12,
+    vx: speed,
+    vy: speed * (0.45 + Math.random() * 0.3),
+    len: 120 + Math.random() * 150,
+    life: 0,
+    max: 80 + Math.random() * 45,
+  });
+}
+
+function drawStarfield(time) {
+  ctx.clearRect(0, 0, vw, vh);
+
+  for (const s of stars) {
+    const alpha = reduceMotion
+      ? s.a
+      : s.a + Math.sin(time * 0.001 * s.sp + s.ph) * 0.22;
+    ctx.globalAlpha = Math.max(0.05, Math.min(1, alpha));
+    ctx.fillStyle = "#efe9ff";
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  if (reduceMotion) return;
+
+  if (time > nextComet) {
+    spawnComet();
+    nextComet = time + 2600 + Math.random() * 4200;
+  }
+
+  comets = comets.filter((c) => c.life < c.max && c.x - c.len < vw + 200);
+
+  for (const c of comets) {
+    c.life += 1;
+    c.x += c.vx;
+    c.y += c.vy;
+
+    const fade = Math.sin((c.life / c.max) * Math.PI);
+    const mag = Math.hypot(c.vx, c.vy);
+    const tx = c.x - (c.vx / mag) * c.len;
+    const ty = c.y - (c.vy / mag) * c.len;
+
+    const grad = ctx.createLinearGradient(c.x, c.y, tx, ty);
+    grad.addColorStop(0, `rgba(238, 232, 255, ${0.9 * fade})`);
+    grad.addColorStop(0.35, `rgba(168, 85, 247, ${0.45 * fade})`);
+    grad.addColorStop(1, "rgba(168, 85, 247, 0)");
+
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(c.x, c.y);
+    ctx.lineTo(tx, ty);
+    ctx.stroke();
+
+    ctx.globalAlpha = fade;
+    ctx.fillStyle = "#fbf7ff";
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, 1.7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+let litUntil = 0;
+
+gsap.ticker.add(() => {
+  const now = performance.now();
+  const dark = root.dataset.theme === "dark";
+
+  if (dark) litUntil = now + 900; // keep drawing through the CSS fade-out
+
+  if (now < litUntil) {
+    drawStarfield(now);
+  } else if (stars.length && comets.length) {
+    comets = [];
+    ctx.clearRect(0, 0, vw, vh);
+  }
+});
+
 /* Custom cursor + magnetic elements */
 
 if (!isTouch && !reduceMotion) {

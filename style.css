@@ -521,50 +521,27 @@ body.is-loaded .loader { display: none; }
   60%, 100% { transform: translateX(100%); }
 }
 
-/* Marquee: a diagonal band crossing the hero instead of a separate horizontal
-   strip. It stays in normal flow (pushing the title and the meta block apart
-   with real margin) rather than being absolutely positioned over them —
-   layout-jitter-proof clearance instead of chasing exact pixel gaps against
-   content whose position shifts slightly between loads (webfont swap etc).
-   The vertical margin comfortably exceeds the rotation's own visual sweep
-   (~36px per side at this width/angle), and the full-bleed width trick
-   (100vw + negative margin) breaks it out of .wrap's centered column. */
+/* Digital-rain band: same slot in the hero (in normal flow between the title
+   and the meta block, full-bleed via the 100vw trick) as the old marquee,
+   but the motion is now top-to-bottom, so no rotation this time — a tilted
+   parent would make the fall read as diagonal instead of straight down. */
 
-.marquee-diagonal {
+.rain-band {
   position: relative;
   width: 106vw;
-  margin: 56px 0 56px calc(50% - 53vw);
-  transform: rotate(-3deg);
-  transform-origin: center;
+  margin: 32px 0 32px calc(50% - 53vw);
+  height: clamp(120px, 16vw, 190px);
   overflow: hidden;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   background: var(--marquee-bg);
-  color: var(--marquee-ink);
-  padding: 8px 0;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.12);
 }
 
-.marquee-track {
-  display: flex;
-  align-items: center;
-  gap: 34px;
-  width: max-content;
-  will-change: transform;
-}
-
-.marquee-track span {
-  font-family: "Bricolage Grotesque", sans-serif;
-  font-size: clamp(14px, 1.8vw, 20px);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  white-space: nowrap;
-}
-
-.marquee-track i {
-  color: var(--accent);
-  font-style: normal;
-  font-size: 14px;
+.rain-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 /* Sections */

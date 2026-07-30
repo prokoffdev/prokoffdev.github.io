@@ -1,6 +1,10 @@
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const isTouch = window.matchMedia("(hover: none)").matches;
 
+// Anything that reads a theme-dependent color into a canvas (not CSS, so it
+// can't just inherit a custom property) registers a refresh callback here.
+const themeToggleColorHooks = [];
+
 gsap.registerPlugin(ScrollTrigger);
 
 /* Smooth scroll */
@@ -218,23 +222,99 @@ document.querySelectorAll("[data-bar]").forEach((bar, i) => {
   );
 });
 
-/* Marquee: one steady, predictable speed — no scroll-reactive acceleration */
+/* Digital rain: tech-stack words falling top-to-bottom through the hero
+   band, hacker-movie style — themed in the site's own accent color rather
+   than the genre's usual green. */
 
-const track = document.querySelector(".marquee-track");
-if (track && !reduceMotion) {
-  let half = track.scrollWidth / 2;
-  let offset = 0;
-  const speed = 1.1;
+const rainCanvas = document.querySelector(".rain-canvas");
 
-  // Webfont swap and resize change the track width, which would break the loop seam.
-  const measure = () => { half = track.scrollWidth / 2; };
-  document.fonts.ready.then(measure);
-  window.addEventListener("resize", measure);
+function hexToRgba(hex, alpha) {
+  const h = hex.trim().replace("#", "");
+  const r = parseInt(h.substring(0, 2), 16);
+  const g = parseInt(h.substring(2, 4), 16);
+  const b = parseInt(h.substring(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
 
-  gsap.ticker.add(() => {
-    offset = (offset + speed) % half;
-    track.style.transform = `translate3d(${-offset}px,0,0)`;
-  });
+if (rainCanvas && !reduceMotion) {
+  const rainCtx = rainCanvas.getContext("2d");
+  const rainWords = [
+    "FIGMA", "HTML", "CSS", "JAVASCRIPT", "PYTHON",
+    "JAVA", "DART", "UNREAL ENGINE", "ANDROID STUDIO", "GIT",
+  ];
+
+  const glyphSize = 15;
+  let rainW = 0;
+  let rainH = 0;
+  let rainColumns = [];
+  let rainBright = "#ffffff";
+  let rainAccent = "#ffffff";
+
+  function refreshRainColors() {
+    const cs = getComputedStyle(document.documentElement);
+    rainBright = cs.getPropertyValue("--marquee-ink").trim();
+    rainAccent = cs.getPropertyValue("--accent").trim();
+  }
+
+  function buildRainColumns() {
+    const count = Math.ceil(rainW / 22);
+    rainColumns = Array.from({ length: count }, (_, i) => ({
+      x: i * 22 + 11,
+      word: (rainWords[Math.floor(Math.random() * rainWords.length)] + "   ").toUpperCase(),
+      y: Math.random() * rainH * 1.6 - rainH * 0.6,
+      speed: 0.9 + Math.random() * 1.3,
+      len: 5 + Math.floor(Math.random() * 4),
+    }));
+  }
+
+  function resizeRain() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    rainW = rainCanvas.clientWidth;
+    rainH = rainCanvas.clientHeight;
+    rainCanvas.width = Math.round(rainW * dpr);
+    rainCanvas.height = Math.round(rainH * dpr);
+    rainCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    buildRainColumns();
+  }
+
+  refreshRainColors();
+  resizeRain();
+  window.addEventListener("resize", resizeRain);
+  document.fonts.ready.then(resizeRain);
+  themeToggleColorHooks.push(refreshRainColors);
+
+  function charAt(col, rowFromHead) {
+    const idx = Math.floor(col.y / glyphSize) - rowFromHead;
+    const len = col.word.length;
+    return col.word[((idx % len) + len) % len];
+  }
+
+  function drawRain() {
+    rainCtx.clearRect(0, 0, rainW, rainH);
+    rainCtx.textAlign = "center";
+    rainCtx.font = `700 ${glyphSize}px "Bricolage Grotesque", sans-serif`;
+
+    rainColumns.forEach((col) => {
+      for (let j = 0; j < col.len; j++) {
+        const y = col.y - j * glyphSize;
+        if (y < -glyphSize || y > rainH + glyphSize) continue;
+        const ch = charAt(col, j);
+        if (ch === " ") continue;
+        const alpha = 1 - j / col.len;
+        rainCtx.fillStyle = j === 0 ? rainBright : hexToRgba(rainAccent, alpha * 0.85);
+        rainCtx.fillText(ch, col.x, y);
+      }
+
+      col.y += col.speed;
+      if (col.y - col.len * glyphSize > rainH + glyphSize) {
+        col.y = -Math.random() * rainH * 0.6;
+        col.speed = 0.9 + Math.random() * 1.3;
+        col.word = (rainWords[Math.floor(Math.random() * rainWords.length)] + "   ").toUpperCase();
+      }
+    });
+  }
+
+  gsap.ticker.add(drawRain);
 }
 
 /* Parallax on blobs */
@@ -260,6 +340,7 @@ themeToggle.addEventListener("click", () => {
   root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
   localStorage.setItem("theme", root.dataset.theme);
   syncToggle();
+  themeToggleColorHooks.forEach((fn) => fn());
 });
 
 // Follow the OS only while the visitor has not picked a theme themselves.
@@ -267,6 +348,7 @@ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e)
   if (localStorage.getItem("theme")) return;
   root.dataset.theme = e.matches ? "dark" : "light";
   syncToggle();
+  themeToggleColorHooks.forEach((fn) => fn());
 });
 
 /* Starfield with comets (dark theme only) */

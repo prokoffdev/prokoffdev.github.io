@@ -422,13 +422,27 @@ body.is-loaded .loader { display: none; }
 }
 
 .hero-title {
-  font-size: clamp(52px, 13vw, 168px);
-  display: flex;
-  flex-direction: column;
+  font-size: clamp(44px, 13vw, 168px);
+  display: block;
+  white-space: nowrap;
 }
 
-.hero-title .line { display: block; }
-.hero-title .line-shift { padding-left: 0.14em; color: var(--accent); }
+.hero-title > span { display: inline-block; }
+.hero-title .accent { color: var(--accent); }
+
+.hero-who {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hero-name {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
 
 .hero-meta {
   display: flex;
@@ -562,8 +576,9 @@ body.is-loaded .loader { display: none; }
   align-items: stretch;
 }
 
-@media (min-width: 1240px) {
-  .cards { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+/* Six cards: three across divides evenly, four would strand two on a second row. */
+@media (min-width: 1040px) {
+  .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (max-width: 620px) {
@@ -795,6 +810,11 @@ body.is-loaded .loader { display: none; }
     gap: 28px;
   }
   .langs-head p { max-width: none; }
+}
+
+/* Logo, toggle and CTA stop fitting once the logo spells out the full handle. */
+@media (max-width: 400px) {
+  .header-cta { display: none; }
 }
 
 @media (max-width: 640px) {

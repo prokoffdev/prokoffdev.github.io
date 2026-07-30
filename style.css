@@ -824,8 +824,10 @@ body.is-loaded .loader { display: none; }
 
 .contact { text-align: left; }
 
+/* Same scale as .section-title (was clamp(40px, 9vw, 124px) — noticeably
+   bigger than the other two section headings for no real reason). */
 .contact-title {
-  font-size: clamp(40px, 9vw, 124px);
+  font-size: clamp(34px, 6.4vw, 82px);
   margin-bottom: 26px;
 }
 

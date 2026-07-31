@@ -589,7 +589,10 @@ body.is-loaded .loader { display: none; }
 @media (min-width: 760px) {
   #approach .section-head {
     margin-left: auto;
-    max-width: 480px;
+    /* Must clear the widest single split line ("На что обращаю" needs
+       ~620px at this heading's max font-size) now that .word is nowrap —
+       480px caused it to overflow past the section's right edge. */
+    max-width: 680px;
     text-align: right;
   }
 }
@@ -649,7 +652,7 @@ body.is-loaded .loader { display: none; }
   align-items: start;
   padding: 42px 0;
   border-bottom: 1px solid var(--line);
-  transition: padding-left 0.5s var(--ease);
+  transition: transform 0.5s var(--ease);
 }
 
 /* Alternate rows step in from the right so the list reads as a staggered
@@ -658,7 +661,13 @@ body.is-loaded .loader { display: none; }
   margin-left: clamp(0px, 9vw, 104px);
 }
 
-.card:hover { padding-left: 14px; }
+/* transform, not padding: padding changes the row's content width, which
+   reflows (and can rewrap) the text inside on every hover — visible as a
+   jitter. Scoped to real pointer devices so touch scrolling on mobile,
+   where :hover can trigger on tap, never sees it at all. */
+@media (hover: hover) and (pointer: fine) {
+  .card:hover { transform: translateX(14px); }
+}
 
 .card-num {
   grid-column: 1;
@@ -788,10 +797,16 @@ body.is-loaded .loader { display: none; }
   align-items: start;
   padding: 40px 0;
   border-bottom: 1px solid var(--line);
-  transition: padding-left 0.5s var(--ease);
+  transition: transform 0.5s var(--ease);
 }
 
-.approach-row:hover { padding-left: 14px; }
+/* transform, not padding: padding changes the row's content width, which
+   reflows (and can rewrap) the paragraph text on every hover — exactly the
+   jitter reported here. Scoped to real pointer devices so touch scrolling
+   on mobile, where :hover can trigger on tap, never sees it. */
+@media (hover: hover) and (pointer: fine) {
+  .approach-row:hover { transform: translateX(14px); }
+}
 
 /* Same staggered rhythm as the cards list above it. */
 .approach-row:nth-child(even) {

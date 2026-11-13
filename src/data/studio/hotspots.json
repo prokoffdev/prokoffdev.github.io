@@ -1,0 +1,274 @@
+{
+  "schemaVersion": "1.0",
+  "sceneId": "SCENE_MAIN_DEVELOPER_ROOM",
+  "priorityRule": "Interactive hotspots take precedence over floor-click movement. If a hotspot is activated in Explore Mode, pathfind to its interactionTile before playing the interact animation.",
+  "hotspots": [
+    {
+      "id": "OBJ_MONITOR",
+      "assetId": "PROP-001",
+      "label": "Проекты",
+      "contentKey": "projects",
+      "anchorTile": [
+        14,
+        0
+      ],
+      "interactionTile": [
+        14,
+        6
+      ],
+      "shape": {
+        "type": "polygon",
+        "points": [
+          [
+            1000,
+            350
+          ],
+          [
+            1190,
+            440
+          ],
+          [
+            1120,
+            510
+          ],
+          [
+            950,
+            420
+          ]
+        ]
+      },
+      "states": [
+        "default",
+        "hover",
+        "focus",
+        "pressed",
+        "selected"
+      ]
+    },
+    {
+      "id": "OBJ_PHONE",
+      "assetId": "PROP-006",
+      "label": "Мобильная разработка",
+      "contentKey": "mobile",
+      "anchorTile": [
+        17,
+        4
+      ],
+      "interactionTile": [
+        18,
+        6
+      ],
+      "shape": {
+        "type": "circle",
+        "center": [
+          1100,
+          690
+        ],
+        "radius": 48
+      },
+      "states": [
+        "default",
+        "hover",
+        "focus",
+        "pressed"
+      ]
+    },
+    {
+      "id": "OBJ_GAMEPAD",
+      "assetId": "PROP-007",
+      "label": "Game Dev",
+      "contentKey": "gamedev",
+      "anchorTile": [
+        8,
+        7
+      ],
+      "interactionTile": [
+        9,
+        8
+      ],
+      "shape": {
+        "type": "circle",
+        "center": [
+          720,
+          610
+        ],
+        "radius": 42
+      },
+      "states": [
+        "default",
+        "hover",
+        "focus",
+        "pressed"
+      ]
+    },
+    {
+      "id": "OBJ_BOOKSHELF",
+      "assetId": "FUR-005",
+      "label": "Навыки и технологии",
+      "contentKey": "skills",
+      "wall": "WALL_B",
+      "wallTile": [
+        0,
+        3
+      ],
+      "interactionTile": [
+        1,
+        4
+      ],
+      "shape": {
+        "type": "polygon",
+        "points": [
+          [
+            280,
+            350
+          ],
+          [
+            480,
+            250
+          ],
+          [
+            520,
+            390
+          ],
+          [
+            320,
+            490
+          ]
+        ]
+      },
+      "states": [
+        "default",
+        "hover",
+        "focus",
+        "pressed",
+        "selected"
+      ]
+    },
+    {
+      "id": "OBJ_PINBOARD",
+      "assetId": "PROP-009",
+      "label": "Рабочий процесс",
+      "contentKey": "process",
+      "wall": "WALL_A",
+      "wallTile": [
+        18,
+        0
+      ],
+      "interactionTile": [
+        18,
+        5
+      ],
+      "shape": {
+        "type": "polygon",
+        "points": [
+          [
+            1160,
+            310
+          ],
+          [
+            1350,
+            405
+          ],
+          [
+            1290,
+            500
+          ],
+          [
+            1100,
+            405
+          ]
+        ]
+      },
+      "states": [
+        "default",
+        "hover",
+        "focus",
+        "pressed"
+      ]
+    },
+    {
+      "id": "OBJ_CONTACT",
+      "assetId": "PROP-010",
+      "label": "Контакты",
+      "contentKey": "contact",
+      "anchorTile": [
+        19,
+        5
+      ],
+      "interactionTile": [
+        19,
+        6
+      ],
+      "shape": {
+        "type": "circle",
+        "center": [
+          1270,
+          640
+        ],
+        "radius": 44
+      },
+      "states": [
+        "default",
+        "hover",
+        "focus",
+        "pressed"
+      ]
+    },
+    {
+      "id": "OBJ_AVATAR",
+      "assetId": "CHR-001",
+      "label": "Обо мне",
+      "contentKey": "about",
+      "anchorTile": [
+        14,
+        6
+      ],
+      "interactionTile": [
+        14,
+        6
+      ],
+      "shape": {
+        "type": "circle",
+        "center": [
+          910,
+          678
+        ],
+        "radius": 54
+      },
+      "states": [
+        "default",
+        "hover",
+        "focus",
+        "pressed"
+      ]
+    },
+    {
+      "id": "OBJ_ROBOCAT",
+      "assetId": "PET-001",
+      "label": "Спросить робо-кота",
+      "contentKey": "assistant-help",
+      "anchorTile": [
+        18,
+        9
+      ],
+      "interactionTile": [
+        18,
+        9
+      ],
+      "shape": {
+        "type": "circle",
+        "center": [
+          1060,
+          785
+        ],
+        "radius": 48
+      },
+      "states": [
+        "default",
+        "hover",
+        "focus",
+        "pressed"
+      ]
+    }
+  ]
+}

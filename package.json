@@ -6,11 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "node scripts/generate-content.mjs && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
     "gsap": "^3.12.5",
-    "lenis": "^1.1.14"
+    "lenis": "^1.1.14",
+    "phaser": "4.2.1"
   },
   "devDependencies": {
     "vite": "^6.2.0"

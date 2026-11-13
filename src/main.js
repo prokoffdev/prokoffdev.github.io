@@ -3,6 +3,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { initTheme, themeToggleColorHooks } from './website/theme.js';
 import { initNavigation } from './website/navigation.js';
 import { initPanels } from './website/panels.js';
+import { StudioBootstrap } from './studio/core/StudioBootstrap.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -17,6 +18,11 @@ initTheme();
 
 // Initialize panels foundation
 const panels = initPanels();
+
+// Initialize Studio Bootstrap (safe feature-flagged container)
+const studio = new StudioBootstrap();
+studio.mount('#studio-mount');
+studio.initialize();
 
 /* Split text into animatable chars */
 function splitText(el) {

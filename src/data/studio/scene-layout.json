@@ -1,0 +1,379 @@
+{
+  "schemaVersion": "1.0",
+  "sceneId": "SCENE_MAIN_DEVELOPER_ROOM",
+  "logicalSize": {
+    "width": 1600,
+    "height": 1000
+  },
+  "projection": {
+    "type": "isometric",
+    "tileWidth": 64,
+    "tileHeight": 32,
+    "columns": 22,
+    "rows": 14,
+    "origin": {
+      "x": 680,
+      "y": 370
+    },
+    "formula": "screenX=originX+(i-j)*32; screenY=originY+(i+j)*16"
+  },
+  "floorCorners": [
+    {
+      "name": "far",
+      "tile": [
+        0,
+        0
+      ],
+      "screen": [
+        680,
+        370
+      ]
+    },
+    {
+      "name": "right",
+      "tile": [
+        22,
+        0
+      ],
+      "screen": [
+        1384,
+        722
+      ]
+    },
+    {
+      "name": "front",
+      "tile": [
+        22,
+        14
+      ],
+      "screen": [
+        936,
+        946
+      ]
+    },
+    {
+      "name": "left",
+      "tile": [
+        0,
+        14
+      ],
+      "screen": [
+        232,
+        594
+      ]
+    }
+  ],
+  "walls": [
+    {
+      "id": "WALL_A",
+      "fromTile": [
+        0,
+        0
+      ],
+      "toTile": [
+        22,
+        0
+      ],
+      "height": 280,
+      "layer": "L20_WALLS_BACK",
+      "role": "workstation-projects"
+    },
+    {
+      "id": "WALL_B",
+      "fromTile": [
+        0,
+        0
+      ],
+      "toTile": [
+        0,
+        14
+      ],
+      "height": 280,
+      "layer": "L20_WALLS_BACK",
+      "role": "skills-gaming"
+    }
+  ],
+  "camera": {
+    "overviewZoom": [
+      0.82,
+      0.9
+    ],
+    "followZoom": [
+      0.98,
+      1.12
+    ],
+    "focusZoom": [
+      1.08,
+      1.22
+    ],
+    "defaultState": "CAM_OVERVIEW",
+    "transitionMs": [
+      350,
+      550
+    ]
+  },
+  "placements": [
+    {
+      "id": "FUR-001",
+      "objectId": "OBJ_WORKSTATION",
+      "assetId": "FUR-001",
+      "tile": [
+        14,
+        3
+      ],
+      "footprint": [
+        9,
+        5
+      ],
+      "layer": "L30+L50",
+      "interactive": false,
+      "notes": "Split back/front artwork if desk occludes avatar."
+    },
+    {
+      "id": "FUR-002",
+      "objectId": "OBJ_CHAIR",
+      "assetId": "FUR-002",
+      "tile": [
+        14,
+        6
+      ],
+      "footprint": [
+        2,
+        2
+      ],
+      "layer": "L40_WORLD_SORTED",
+      "interactive": false
+    },
+    {
+      "id": "CHR-001",
+      "objectId": "OBJ_AVATAR",
+      "assetId": "CHR-001",
+      "tile": [
+        14,
+        6
+      ],
+      "screen": {
+        "x": 936,
+        "y": 690
+      },
+      "layer": "L40_WORLD_SORTED",
+      "interactive": true,
+      "initialState": "CHR_WORK",
+      "startPose": "seated",
+      "interactionTile": [
+        14,
+        6
+      ]
+    },
+    {
+      "id": "PET-001",
+      "objectId": "OBJ_ROBOCAT",
+      "assetId": "PET-001",
+      "tile": [
+        18,
+        9
+      ],
+      "screen": {
+        "x": 968,
+        "y": 802
+      },
+      "layer": "L40_WORLD_SORTED",
+      "interactive": true,
+      "initialState": "CAT_IDLE",
+      "homeTile": [
+        17,
+        10
+      ],
+      "uniqueInstance": true
+    },
+    {
+      "id": "FUR-003",
+      "objectId": "OBJ_BED",
+      "assetId": "FUR-003",
+      "tile": [
+        5,
+        9
+      ],
+      "footprint": [
+        7,
+        5
+      ],
+      "layer": "L40_WORLD_SORTED",
+      "interactive": false
+    },
+    {
+      "id": "FUR-004",
+      "objectId": "OBJ_BEDSIDE",
+      "assetId": "FUR-004",
+      "tile": [
+        2,
+        9
+      ],
+      "footprint": [
+        2,
+        2
+      ],
+      "layer": "L40_WORLD_SORTED",
+      "interactive": false
+    },
+    {
+      "id": "FUR-005",
+      "objectId": "OBJ_BOOKSHELF",
+      "assetId": "FUR-005",
+      "wall": "WALL_B",
+      "wallTile": [
+        0,
+        3
+      ],
+      "layer": "L21_WALL_PROPS",
+      "interactive": true,
+      "interactionTile": [
+        1,
+        4
+      ]
+    },
+    {
+      "id": "PROP-001",
+      "objectId": "OBJ_MONITOR",
+      "assetId": "PROP-001",
+      "wall": "WALL_A",
+      "wallTile": [
+        14,
+        0
+      ],
+      "layer": "L30+L50",
+      "interactive": true,
+      "interactionTile": [
+        14,
+        6
+      ]
+    },
+    {
+      "id": "PROP-002",
+      "objectId": "OBJ_PC_TOWER",
+      "assetId": "PROP-002",
+      "tile": [
+        9,
+        3
+      ],
+      "footprint": [
+        2,
+        2
+      ],
+      "layer": "L40_WORLD_SORTED",
+      "interactive": false
+    },
+    {
+      "id": "PROP-006",
+      "objectId": "OBJ_PHONE",
+      "assetId": "PROP-006",
+      "tile": [
+        17,
+        4
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "L40_WORLD_SORTED",
+      "interactive": true,
+      "interactionTile": [
+        18,
+        6
+      ]
+    },
+    {
+      "id": "PROP-007",
+      "objectId": "OBJ_GAMEPAD",
+      "assetId": "PROP-007",
+      "tile": [
+        8,
+        7
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "L40_WORLD_SORTED",
+      "interactive": true,
+      "interactionTile": [
+        9,
+        8
+      ]
+    },
+    {
+      "id": "PROP-009",
+      "objectId": "OBJ_PINBOARD",
+      "assetId": "PROP-009",
+      "wall": "WALL_A",
+      "wallTile": [
+        18,
+        0
+      ],
+      "layer": "L21_WALL_PROPS",
+      "interactive": true,
+      "interactionTile": [
+        18,
+        5
+      ]
+    },
+    {
+      "id": "PROP-010",
+      "objectId": "OBJ_CONTACT",
+      "assetId": "PROP-010",
+      "tile": [
+        19,
+        5
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "L40_WORLD_SORTED",
+      "interactive": true,
+      "interactionTile": [
+        19,
+        6
+      ]
+    },
+    {
+      "id": "FUR-008",
+      "objectId": "OBJ_CAT_STATION",
+      "assetId": "FUR-008",
+      "tile": [
+        17,
+        10
+      ],
+      "footprint": [
+        2,
+        1
+      ],
+      "layer": "L40_WORLD_SORTED",
+      "interactive": false
+    },
+    {
+      "id": "FUR-009",
+      "objectId": "OBJ_RUG",
+      "assetId": "FUR-009",
+      "tile": [
+        11,
+        9
+      ],
+      "footprint": [
+        6,
+        3
+      ],
+      "layer": "L11_FLOOR_DECALS",
+      "interactive": false
+    }
+  ],
+  "renderRules": {
+    "depthSortAnchor": "feet-or-bottom-center",
+    "depthFormula": "sortY*100+depthBias",
+    "splitOccluders": [
+      "FUR-001",
+      "FUR-002"
+    ],
+    "singleRobotCatOnly": true
+  }
+}

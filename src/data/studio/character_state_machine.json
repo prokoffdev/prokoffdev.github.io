@@ -1,0 +1,235 @@
+{
+  "schema_version": "1.0",
+  "runtime": "Phaser 4 + TypeScript recommended; compatible implementation can be Vanilla JS",
+  "global_rules": {
+    "single_human_instance": true,
+    "single_robot_cat_instance": true,
+    "pause_world_animations_when_tab_hidden": true,
+    "reduced_motion": "Use lower frame rates, disable idle bobbing/VFX and camera shake; preserve essential state changes.",
+    "modal_open": "Pause player input and cat follow pathfinding; idle animation may continue at reduced rate.",
+    "no_autonomous_content_claims": "Companion dialogue comes only from authored content map; never invent project skills or results."
+  },
+  "human": {
+    "instance_id": "CHR-001",
+    "atlas": "human_atlas.png",
+    "frame_size_logical": [
+      128,
+      160
+    ],
+    "pivot": {
+      "x": 64,
+      "y": 152,
+      "unit": "logical_px",
+      "name": "feet_center"
+    },
+    "default_state": "typing",
+    "default_direction": "desk_facing",
+    "states": {
+      "idle": {
+        "animations": [
+          "human_idle_iso_nw",
+          "human_idle_iso_ne",
+          "human_idle_iso_se",
+          "human_idle_iso_sw"
+        ],
+        "interruptible": true,
+        "exit": "walk|interact|greeting|typing"
+      },
+      "walk": {
+        "animations": [
+          "human_walk_iso_nw",
+          "human_walk_iso_ne",
+          "human_walk_iso_se",
+          "human_walk_iso_sw"
+        ],
+        "interruptible": true,
+        "exit": "idle|interact"
+      },
+      "typing": {
+        "animations": [
+          "human_typing_desk_facing"
+        ],
+        "interruptible": true,
+        "exit": "thinking|stand_up"
+      },
+      "thinking": {
+        "animations": [
+          "human_thinking_desk_facing"
+        ],
+        "interruptible": true,
+        "exit": "typing|stand_up"
+      },
+      "greeting": {
+        "animations": [
+          "human_greeting_front_three_quarter"
+        ],
+        "interruptible": false,
+        "exit": "idle"
+      },
+      "stand_up": {
+        "animations": [
+          "human_stand_up_desk_facing"
+        ],
+        "interruptible": false,
+        "exit": "idle"
+      },
+      "sit_down": {
+        "animations": [
+          "human_sit_down_desk_facing"
+        ],
+        "interruptible": false,
+        "exit": "typing"
+      },
+      "interact": {
+        "animations": [
+          "human_interact_iso_nw",
+          "human_interact_iso_ne",
+          "human_interact_iso_se",
+          "human_interact_iso_sw"
+        ],
+        "interruptible": false,
+        "exit": "idle"
+      }
+    },
+    "transitions": [
+      {
+        "from": "typing",
+        "event": "USER_START_MOVE",
+        "to": "stand_up",
+        "then": "walk"
+      },
+      {
+        "from": "thinking",
+        "event": "USER_START_MOVE",
+        "to": "stand_up",
+        "then": "walk"
+      },
+      {
+        "from": "walk",
+        "event": "PATH_COMPLETE",
+        "to": "idle"
+      },
+      {
+        "from": "idle",
+        "event": "INTERACT_WITH_OBJECT",
+        "to": "interact"
+      },
+      {
+        "from": "interact",
+        "event": "ANIMATION_COMPLETE",
+        "to": "idle"
+      },
+      {
+        "from": "idle",
+        "event": "RETURN_TO_DESK",
+        "to": "walk",
+        "then": "sit_down",
+        "then_state": "typing"
+      },
+      {
+        "from": "typing",
+        "event": "IDLE_TIMEOUT",
+        "to": "thinking"
+      },
+      {
+        "from": "thinking",
+        "event": "WORK_RESUME",
+        "to": "typing"
+      }
+    ],
+    "movement": {
+      "speed_tiles_per_second": 2.7,
+      "diagonal_normalized": true,
+      "stop_distance_tiles": 0.12,
+      "turn_before_walk": true,
+      "turn_blend_ms": 100
+    }
+  },
+  "robot_cat": {
+    "instance_id": "PET-001",
+    "atlas": "robo_cat_atlas.png",
+    "frame_size_logical": [
+      96,
+      96
+    ],
+    "pivot": {
+      "x": 48,
+      "y": 88,
+      "unit": "logical_px",
+      "name": "paw_center"
+    },
+    "default_state": "idle",
+    "default_direction": "iso_sw",
+    "states": {
+      "idle": {
+        "animations": [
+          "robo_cat_idle_iso_nw",
+          "robo_cat_idle_iso_ne",
+          "robo_cat_idle_iso_se",
+          "robo_cat_idle_iso_sw"
+        ],
+        "interruptible": true,
+        "exit": "walk|sleep|react|assist"
+      },
+      "walk": {
+        "animations": [
+          "robo_cat_walk_iso_nw",
+          "robo_cat_walk_iso_ne",
+          "robo_cat_walk_iso_se",
+          "robo_cat_walk_iso_sw"
+        ],
+        "interruptible": true,
+        "exit": "idle|assist"
+      },
+      "sleep": {
+        "animations": [
+          "robo_cat_sleep_rest_three_quarter"
+        ],
+        "interruptible": true,
+        "exit": "react|walk"
+      },
+      "assist": {
+        "animations": [
+          "robo_cat_assist_iso_nw",
+          "robo_cat_assist_iso_ne",
+          "robo_cat_assist_iso_se",
+          "robo_cat_assist_iso_sw"
+        ],
+        "interruptible": false,
+        "exit": "idle"
+      },
+      "react": {
+        "animations": [
+          "robo_cat_react_iso_nw",
+          "robo_cat_react_iso_ne",
+          "robo_cat_react_iso_se",
+          "robo_cat_react_iso_sw"
+        ],
+        "interruptible": false,
+        "exit": "idle"
+      },
+      "surprise": {
+        "animations": [
+          "robo_cat_surprise_front_three_quarter"
+        ],
+        "interruptible": false,
+        "exit": "idle"
+      }
+    },
+    "behavior": {
+      "follow_enabled_by_default": false,
+      "follow_toggle_label": "Робо-кот следует за мной",
+      "follow_distance_tiles": [
+        1.5,
+        2.5
+      ],
+      "repath_interval_ms": 300,
+      "minimum_repath_distance_tiles": 0.75,
+      "never_occupy_player_next_waypoint": true,
+      "never_block_hotspot_approach": true,
+      "stop_when_modal_open": true,
+      "assist_trigger": "User clicks the robot cat or requests help from authored UI control.",
+      "assist_target": "Nearest safe point next to the requested hotspot, not on the hotspot itself."
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "sectionNum": "04",
+  "sectionLabel": "Контакты",
+  "title": "Давайте сделаем",
+  "lede": "Быстрее всего отвечаю в Telegram. Напишите, если нужен сайт, приложение на телефон или игра — от идеи до готовой версии.",
+  "channels": [
+    {
+      "id": "telegram",
+      "label": "Telegram",
+      "action": "Написать в Telegram",
+      "url": "https://t.me/oleherrr_kp",
+      "display": "@oleherrr_kp",
+      "isPrimary": true
+    },
+    {
+      "id": "email",
+      "label": "E-mail",
+      "action": "E-mail",
+      "url": "mailto:olegprokofev2002@gmail.com",
+      "display": "olegprokofev2002@gmail.com",
+      "isPrimary": false
+    }
+  ],
+  "footerLinks": [
+    {
+      "label": "Telegram",
+      "url": "https://t.me/oleherrr_kp"
+    },
+    {
+      "label": "Почта",
+      "url": "mailto:olegprokofev2002@gmail.com"
+    }
+  ]
+}

@@ -21,6 +21,7 @@ export class StudioBootstrap {
   constructor(options = {}) {
     this.status = StudioStatus.UNMOUNTED;
     this.container = null;
+    this.game = null;
     this.options = options;
     this.data = {
       layout: sceneLayoutData,
@@ -32,12 +33,6 @@ export class StudioBootstrap {
     this.error = null;
   }
 
-  /**
-   * Evaluates feature flag status: URL query parameter (?studio=true),
-   * localStorage or explicit options.
-   *
-   * @returns {boolean}
-   */
   isFeatureEnabled() {
     if (typeof this.options.enabled === 'boolean') {
       return this.options.enabled;
@@ -52,16 +47,9 @@ export class StudioBootstrap {
         return stored === 'true';
       }
     }
-    // Default safe baseline: studio disabled during Stage 1 foundation
     return false;
   }
 
-  /**
-   * Mounts the studio into a DOM container element.
-   *
-   * @param {HTMLElement|string} target - Container element or CSS selector
-   * @returns {this}
-   */
   mount(target) {
     if (this.status === StudioStatus.INITIALIZED) {
       console.warn('[StudioBootstrap] Already initialized. Destroy before remounting.');
@@ -75,7 +63,6 @@ export class StudioBootstrap {
     } else if (typeof HTMLElement !== 'undefined' && target instanceof HTMLElement) {
       this.container = target;
     } else if (target && typeof target === 'object' && target.style) {
-      // Support duck-typed mock elements in test runners
       this.container = target;
     }
 
@@ -90,20 +77,13 @@ export class StudioBootstrap {
     return this;
   }
 
-  /**
-   * Initializes studio data models, validates configurations, and prepares stage.
-   *
-   * @param {object} [runtimeOptions]
-   * @returns {boolean} Success status
-   */
-  initialize(runtimeOptions = {}) {
+  async initialize(runtimeOptions = {}) {
     if (!this.container) {
       this.status = StudioStatus.ERROR;
       this.error = new Error('[StudioBootstrap] Cannot initialize before mounting to a container.');
       return false;
     }
 
-    // Check feature flag
     if (!this.isFeatureEnabled()) {
       this.status = StudioStatus.DISABLED;
       this.container.style.display = 'none';
@@ -129,21 +109,126 @@ export class StudioBootstrap {
       this.status = StudioStatus.ERROR;
       this.error = new Error('[StudioBootstrap] Configuration validation failed');
       console.error(this.error.message, this.validationResults);
-      // Fallback: keep container hidden
       this.container.style.display = 'none';
       return false;
     }
 
-    this.status = StudioStatus.INITIALIZED;
+    // Validated successfully
     this.container.style.display = 'block';
+
+    // Launch Phaser in container if browser environment
+    if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+      this.container.style.width = '100%';
+      this.container.style.maxWidth = '1600px';
+      this.container.style.margin = '0 auto 40px auto';
+      this.container.style.position = 'relative';
+
+      try {
+        const phaserModule = await import('phaser');
+        const Phaser = phaserModule.default || phaserModule;
+        const { StudioScene } = await import('../scenes/StudioScene.js');
+
+        // Create Phaser Game configuration
+        const gameConfig = {
+          type: Phaser.AUTO,
+          parent: this.container,
+          width: 1600,
+          height: 1000,
+          backgroundColor: '#111923',
+          scale: {
+            mode: Phaser.Scale.FIT,
+            autoCenter: Phaser.Scale.CENTER_BOTH,
+            width: 1600,
+            height: 1000,
+          },
+          scene: [StudioScene],
+        };
+
+        this.game = new Phaser.Game(gameConfig);
+        this.createDebugToolbar();
+      } catch (err) {
+        console.error('[StudioBootstrap] Failed to launch Phaser game:', err);
+        this.status = StudioStatus.ERROR;
+        this.error = err;
+        this.container.style.display = 'none';
+        return false;
+      }
+    }
+
+    this.status = StudioStatus.INITIALIZED;
     this.container.setAttribute('data-studio-status', 'ready');
     return true;
   }
 
-  /**
-   * Destroys the bootstrap instance, clears listeners, and restores container.
-   */
+  createDebugToolbar() {
+    if (!this.container || typeof document === 'undefined') return;
+
+    let toolbar = this.container.querySelector('.studio-debug-toolbar');
+    if (toolbar) toolbar.remove();
+
+    toolbar = document.createElement('div');
+    toolbar.className = 'studio-debug-toolbar';
+    toolbar.style.cssText = `
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      background: rgba(17, 25, 35, 0.92);
+      border: 1px solid rgba(100, 115, 134, 0.4);
+      border-radius: 999px;
+      padding: 6px 14px;
+      z-index: 50;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      backdrop-filter: blur(8px);
+    `;
+
+    const buttons = [
+      { id: 'btn-overview', label: 'Обзор [1]', action: () => this.getScene()?.cameraDirector?.setOverview() },
+      { id: 'btn-focus', label: 'Фокус [2]', action: () => this.getScene()?.cameraDirector?.setFocus(936, 600) },
+      { id: 'btn-follow', label: 'Следование [3]', action: () => this.getScene()?.cameraDirector?.setFollow(this.getScene().testActor) },
+      { id: 'btn-grid', label: 'Сетка [G]', action: () => this.getScene()?.toggleDebug('grid') },
+      { id: 'btn-collision', label: 'Коллизии [C]', action: () => this.getScene()?.toggleDebug('collision') },
+      { id: 'btn-hotspots', label: 'Хотспоты [H]', action: () => this.getScene()?.toggleDebug('hotspots') },
+    ];
+
+    buttons.forEach((btn) => {
+      const b = document.createElement('button');
+      b.id = btn.id;
+      b.type = 'button';
+      b.textContent = btn.label;
+      b.style.cssText = `
+        background: rgba(36, 48, 62, 0.85);
+        color: #e2e8f0;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        border-radius: 999px;
+        padding: 4px 12px;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      `;
+      b.onmouseenter = () => { b.style.background = 'rgba(255, 69, 77, 0.2)'; b.style.borderColor = '#ff454d'; };
+      b.onmouseleave = () => { b.style.background = 'rgba(36, 48, 62, 0.85)'; b.style.borderColor = 'rgba(148, 163, 184, 0.25)'; };
+      b.onclick = btn.action;
+      toolbar.appendChild(b);
+    });
+
+    this.container.appendChild(toolbar);
+  }
+
+  getScene() {
+    return this.game?.scene?.getScene('StudioScene') ?? null;
+  }
+
   destroy() {
+    if (this.game) {
+      this.game.destroy(true);
+      this.game = null;
+    }
     if (this.container) {
       this.container.innerHTML = '';
       this.container.removeAttribute('data-studio-status');
@@ -154,11 +239,6 @@ export class StudioBootstrap {
     this.error = null;
   }
 
-  /**
-   * Returns current studio lifecycle status.
-   *
-   * @returns {string}
-   */
   getStatus() {
     return this.status;
   }

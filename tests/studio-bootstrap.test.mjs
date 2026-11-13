@@ -15,7 +15,7 @@ describe('StudioBootstrap Lifecycle & Feature Flag Tests', () => {
     assert.ok(bootstrap.error);
   });
 
-  it('should mount to a mock DOM element and stay disabled by default', () => {
+  it('should mount to a mock DOM element and stay disabled by default', async () => {
     // Mock minimal DOM element for node environment
     const mockContainer = {
       style: { display: '' },
@@ -29,13 +29,13 @@ describe('StudioBootstrap Lifecycle & Feature Flag Tests', () => {
     assert.equal(bootstrap.getStatus(), StudioStatus.MOUNTED);
 
     // Default: studio is disabled
-    const initRes = bootstrap.initialize();
+    const initRes = await bootstrap.initialize();
     assert.equal(initRes, false);
     assert.equal(bootstrap.getStatus(), StudioStatus.DISABLED);
     assert.equal(mockContainer.style.display, 'none');
   });
 
-  it('should initialize and validate data when feature flag is enabled', () => {
+  it('should initialize and validate data when feature flag is enabled', async () => {
     const mockContainer = {
       style: { display: '' },
       setAttribute: (k, v) => { mockContainer[k] = v; },
@@ -47,7 +47,7 @@ describe('StudioBootstrap Lifecycle & Feature Flag Tests', () => {
     bootstrap.mount(mockContainer);
     assert.equal(bootstrap.getStatus(), StudioStatus.MOUNTED);
 
-    const initRes = bootstrap.initialize();
+    const initRes = await bootstrap.initialize();
     assert.equal(initRes, true);
     assert.equal(bootstrap.getStatus(), StudioStatus.INITIALIZED);
     assert.equal(mockContainer.style.display, 'block');

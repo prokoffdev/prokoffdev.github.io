@@ -140,8 +140,10 @@ export class StudioScene extends Phaser.Scene {
     // 4. Rendering Layers
     this.createFloorAndWalls();
     this.createFurnitureGreybox();
+    this.createAmbientVfx();
     this.createDebugLayers();
     this.setupInteractionAndControls();
+    this.setupVisibilityListeners();
 
     // Set initial overview camera
     this.cameraDirector.setOverview(true);
@@ -583,6 +585,63 @@ export class StudioScene extends Phaser.Scene {
     }
   }
 
+  createAmbientVfx() {
+    this.ambientVfxGraphics = this.add.graphics();
+    this.ambientVfxGraphics.setDepth(2000);
+  }
+
+  setupVisibilityListeners() {
+    if (this.game && this.game.events) {
+      this.game.events.on(Phaser.Core.Events.BLUR, () => {
+        this.scene.pause();
+      });
+      this.game.events.on(Phaser.Core.Events.FOCUS, () => {
+        this.scene.resume();
+      });
+    }
+  }
+
+  renderAmbientVfx(time) {
+    if (!this.ambientVfxGraphics) return;
+    const g = this.ambientVfxGraphics;
+    g.clear();
+
+    const prefersReducedMotion = typeof window !== 'undefined'
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const effTime = prefersReducedMotion ? 0 : time;
+
+    // 1. Dual Monitor Glow onto Workstation Keyboard & Desk
+    const monitorPulse = Math.sin(effTime * 0.003) * 0.04 + 0.14;
+    g.fillStyle(0x00f0ff, monitorPulse);
+    g.fillPoints([
+      { x: 1000, y: 390 },
+      { x: 1190, y: 470 },
+      { x: 1130, y: 550 },
+      { x: 920, y: 450 },
+    ], true);
+
+    // Warm monitor screen highlight
+    g.fillStyle(0x38bdf8, monitorPulse * 0.6);
+    g.fillPoints([
+      { x: 1040, y: 410 },
+      { x: 1160, y: 465 },
+      { x: 1100, y: 520 },
+      { x: 970, y: 460 },
+    ], true);
+
+    // 2. Bedside Lamp Glow (warm amber/orange)
+    const lampPulse = Math.sin(effTime * 0.002) * 0.02 + 0.15;
+    g.fillStyle(0xffa500, lampPulse);
+    g.fillEllipse(540, 520, 80, 40);
+    g.fillStyle(0xffd700, lampPulse * 0.5);
+    g.fillEllipse(540, 520, 44, 22);
+
+    // 3. Cat Cushion Charging Station Aura (soft cyan)
+    const catPulse = Math.sin(effTime * 0.004) * 0.03 + 0.12;
+    g.fillStyle(0x00ffff, catPulse);
+    g.fillEllipse(900, 810, 64, 30);
+  }
+
   moveActorTo(targetCol, targetRow, onArrival = null) {
     if (this.avatar) {
       this.avatar.moveTo(targetCol, targetRow, onArrival);
@@ -593,5 +652,6 @@ export class StudioScene extends Phaser.Scene {
     this.avatar?.update(time, delta);
     this.roboCat?.update(time, delta);
     this.cameraDirector?.update(time, delta);
+    this.renderAmbientVfx(time);
   }
 }

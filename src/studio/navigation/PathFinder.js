@@ -1,13 +1,14 @@
 import { CellType } from './CollisionGrid.js';
+import { IsoGrid } from '../core/IsoGrid.js';
 
 export class PathFinder {
   /**
    * @param {CollisionGrid} collisionGrid
-   * @param {IsoGrid} isoGrid
+   * @param {IsoGrid} [isoGrid]
    */
-  constructor(collisionGrid, isoGrid) {
+  constructor(collisionGrid, isoGrid = null) {
     this.collisionGrid = collisionGrid;
-    this.isoGrid = isoGrid;
+    this.isoGrid = isoGrid || new IsoGrid();
   }
 
   /**
@@ -32,17 +33,28 @@ export class PathFinder {
 
   /**
    * Finds the shortest walkable path between (startCol, startRow) and (endCol, endRow) using A*.
+   * Supports both (startCol, startRow, endCol, endRow, options) and ([startCol, startRow], [endCol, endRow], options).
    *
-   * @param {number} startCol
-   * @param {number} startRow
-   * @param {number} endCol
-   * @param {number} endRow
+   * @param {number|number[]} startCol
+   * @param {number|number[]} startRow
+   * @param {number|object} [endCol]
+   * @param {number} [endRow]
    * @param {object} [options]
    * @param {boolean} [options.allowStartOnReserved=true]
    * @param {boolean} [options.allowTargetOnReserved=false]
    * @returns {Array<{ col: number, row: number, dir: string }>} Path array (excluding start node, including target)
    */
   findPath(startCol, startRow, endCol, endRow, options = {}) {
+    if (Array.isArray(startCol) && Array.isArray(startRow)) {
+      options = endCol || {};
+      const targetArr = startRow;
+      const startArr = startCol;
+      endCol = targetArr[0];
+      endRow = targetArr[1];
+      startCol = startArr[0];
+      startRow = startArr[1];
+    }
+
     const allowStartReserved = options.allowStartOnReserved ?? true;
     const allowTargetReserved = options.allowTargetOnReserved ?? false;
 

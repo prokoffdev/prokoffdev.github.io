@@ -120,7 +120,7 @@ export class StudioBootstrap {
     if (typeof window !== 'undefined' && typeof document !== 'undefined') {
       this.container.style.width = '100%';
       this.container.style.maxWidth = '1600px';
-      this.container.style.margin = '0 auto 40px auto';
+      this.container.style.margin = '80px auto 40px auto';
       this.container.style.position = 'relative';
 
       try {

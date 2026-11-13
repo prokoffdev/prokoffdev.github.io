@@ -8,6 +8,9 @@ import { HotspotManager } from '../interactions/HotspotManager.js';
 import { InteractionRouter, InteractionMode } from '../interactions/InteractionRouter.js';
 import { ContentPanel } from '../ui/ContentPanel.js';
 import { StudioHud } from '../ui/StudioHud.js';
+import { Avatar } from '../entities/Avatar.js';
+import { RoboCat } from '../entities/RoboCat.js';
+import { CompanionController } from '../entities/CompanionController.js';
 import sceneLayoutData from '../../data/studio/scene-layout.json' with { type: 'json' };
 import collisionMapData from '../../data/studio/collision-map.json' with { type: 'json' };
 import hotspotsData from '../../data/studio/hotspots.json' with { type: 'json' };
@@ -25,6 +28,11 @@ export class StudioScene extends Phaser.Scene {
     this.contentPanel = null;
     this.studioHud = null;
 
+    // Entities
+    this.avatar = null;
+    this.roboCat = null;
+    this.companionController = null;
+
     // Graphics Layers
     this.floorGraphics = null;
     this.wallGraphics = null;
@@ -39,18 +47,15 @@ export class StudioScene extends Phaser.Scene {
       collision: false,
       hotspots: false,
     };
+  }
 
-    // Test actor for pathfinding & follow camera verification
-    this.testActor = {
-      col: 14,
-      row: 6,
-      x: 936,
-      y: 690,
-      path: [],
-      onArrival: null,
-      speedPxPerSec: 160,
+  get testActor() {
+    return {
+      col: this.avatar?.currentCol ?? 14,
+      row: this.avatar?.currentRow ?? 6,
+      x: this.avatar?.container?.x ?? 936,
+      y: this.avatar?.container?.y ?? 690,
     };
-    this.testMarkerGraphics = null;
   }
 
   create() {
@@ -62,9 +67,20 @@ export class StudioScene extends Phaser.Scene {
     this.pathFinder = new PathFinder(this.collisionGrid, this.isoGrid);
     this.cameraDirector = new CameraDirector(this.cameras.main);
 
-    // 2. UI & Interaction Modules
+    // 2. Entities
+    this.avatar = new Avatar(this, this.isoGrid, this.pathFinder, 14, 6);
+    this.roboCat = new RoboCat(this, this.isoGrid, this.pathFinder, 18, 9);
+
+    // 3. UI & Interaction Modules
     this.contentPanel = new ContentPanel(mountContainer, {
+      onOpen: (contentKey) => {
+        this.companionController?.onModalOpened();
+        if (contentKey === 'assistant-help') {
+          this.roboCat?.assist();
+        }
+      },
       onClose: () => {
+        this.companionController?.onModalClosed();
         this.cameraDirector.setOverview();
       },
       onNavigate: (targetKey) => {
@@ -72,15 +88,32 @@ export class StudioScene extends Phaser.Scene {
         if (hotspot) {
           const pt = this.interactionRouter.getHotspotCenterPoint(hotspot);
           this.cameraDirector.setFocus(pt.x, pt.y);
+          this.companionController?.guideToHotspot(hotspot.id);
+        }
+      },
+      onAction: (action) => {
+        if (action === 'toggle-follow') {
+          return this.companionController?.toggleFollow();
+        }
+        if (action === 'purr') {
+          this.roboCat?.react();
         }
       },
     });
 
     this.hotspotManager = new HotspotManager(this, {
       onSelect: (hotspot) => {
-        this.interactionRouter.handleHotspotSelected(hotspot, this.testActor);
+        if (hotspot.id === 'OBJ_ROBOCAT') {
+          this.roboCat?.react();
+        }
+        this.interactionRouter.handleHotspotSelected(hotspot, {
+          col: Math.round(this.avatar.currentCol),
+          row: Math.round(this.avatar.currentRow),
+        });
       },
     });
+
+    this.companionController = new CompanionController(this.roboCat, this.avatar, this.hotspotManager);
 
     this.interactionRouter = new InteractionRouter({
       isoGrid: this.isoGrid,
@@ -88,21 +121,26 @@ export class StudioScene extends Phaser.Scene {
       contentPanel: this.contentPanel,
       hotspotManager: this.hotspotManager,
       onMoveTo: (targetCol, targetRow, onArrival) => {
-        this.moveActorTo(targetCol, targetRow, onArrival);
+        this.avatar.moveTo(targetCol, targetRow, onArrival);
       },
     });
 
     this.studioHud = new StudioHud(mountContainer, {
       onModeChange: (newMode) => {
         this.interactionRouter.setMode(newMode);
+        if (newMode === InteractionMode.EXPLORE) {
+          if (this.avatar.fsm.is('typing') || this.avatar.fsm.is('thinking')) {
+            this.avatar.fsm.dispatch('USER_START_MOVE');
+            this.avatar.fsm.forceState('idle');
+          }
+        }
       },
     });
 
-    // 3. Rendering Layers
+    // 4. Rendering Layers
     this.createFloorAndWalls();
     this.createFurnitureGreybox();
     this.createDebugLayers();
-    this.createTestActor();
     this.setupInteractionAndControls();
 
     // Set initial overview camera
@@ -446,30 +484,36 @@ export class StudioScene extends Phaser.Scene {
     });
   }
 
-  createTestActor() {
-    this.testMarkerGraphics = this.add.graphics();
-    this.updateTestMarkerVisual();
-  }
-
-  updateTestMarkerVisual() {
-    const g = this.testMarkerGraphics;
-    g.clear();
-
-    // Base shadow
-    g.fillStyle(0x000000, 0.4);
-    g.fillEllipse(this.testActor.x, this.testActor.y, 28, 14);
-
-    // Cyan waypoint beacon
-    g.fillStyle(STUDIO_PALETTE.CYAN_ACCENT, 0.9);
-    g.fillCircle(this.testActor.x, this.testActor.y - 18, 9);
-    g.lineStyle(2, 0xffffff, 1);
-    g.strokeCircle(this.testActor.x, this.testActor.y - 18, 9);
-
-    g.lineStyle(1.5, STUDIO_PALETTE.CYAN_ACCENT, 0.7);
-    g.lineBetween(this.testActor.x, this.testActor.y - 18, this.testActor.x, this.testActor.y);
-  }
-
   setupInteractionAndControls() {
+    // Keyboard WASD and Arrow keys for Explore Mode
+    const cursors = this.input.keyboard.createCursorKeys();
+    const keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+    const keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+    const keyS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
+    const keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+
+    const handleDirectionalStep = (dc, dr) => {
+      if (this.contentPanel?.isOpen) return;
+      if (this.interactionRouter?.getMode() !== InteractionMode.EXPLORE) return;
+      if (!this.avatar || this.avatar.isMoving) return;
+
+      const targetCol = Math.round(this.avatar.currentCol) + dc;
+      const targetRow = Math.round(this.avatar.currentRow) + dr;
+
+      if (this.collisionGrid.isWalkable(targetCol, targetRow, { allowReserved: false })) {
+        this.avatar.moveTo(targetCol, targetRow);
+      }
+    };
+
+    keyW.on('down', () => handleDirectionalStep(-1, 0)); // iso_nw
+    keyS.on('down', () => handleDirectionalStep(1, 0));  // iso_se
+    keyA.on('down', () => handleDirectionalStep(0, 1));  // iso_sw
+    keyD.on('down', () => handleDirectionalStep(0, -1)); // iso_ne
+    cursors.up.on('down', () => handleDirectionalStep(-1, 0));
+    cursors.down.on('down', () => handleDirectionalStep(1, 0));
+    cursors.left.on('down', () => handleDirectionalStep(0, 1));
+    cursors.right.on('down', () => handleDirectionalStep(0, -1));
+
     // Pointer move: hover feedback and tooltip
     this.input.on('pointermove', (pointer) => {
       const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
@@ -487,21 +531,26 @@ export class StudioScene extends Phaser.Scene {
       const hit = this.hotspotManager?.handlePointerDown(worldPoint.x, worldPoint.y);
       if (hit) return;
 
-      // In Explore Mode: click on floor walks actor
-      if (this.interactionRouter?.getMode() === InteractionMode.EXPLORE) {
+      // In Explore Mode: click on floor walks avatar
+      if (this.interactionRouter?.getMode() === InteractionMode.EXPLORE && this.avatar) {
         const clickedCell = this.isoGrid.screenToCell(worldPoint.x, worldPoint.y);
         if (this.isoGrid.isValidCell(clickedCell.col, clickedCell.row)) {
-          this.moveActorTo(clickedCell.col, clickedCell.row);
+          this.avatar.moveTo(clickedCell.col, clickedCell.row);
         }
       }
     });
 
     // Keydown 'E': interact with nearest hotspot in explore mode
     this.input.keyboard.on('keydown-E', () => {
-      if (this.contentPanel?.isOpen) return;
-      const nearest = this.interactionRouter?.findNearestInteractiveHotspot(this.testActor.col, this.testActor.row);
+      if (this.contentPanel?.isOpen || !this.avatar) return;
+      const nearest = this.interactionRouter?.findNearestInteractiveHotspot(
+        Math.round(this.avatar.currentCol),
+        Math.round(this.avatar.currentRow)
+      );
       if (nearest) {
-        this.interactionRouter.triggerInteraction(nearest);
+        this.avatar.interact(() => {
+          this.interactionRouter.triggerInteraction(nearest);
+        });
       }
     });
 
@@ -518,7 +567,11 @@ export class StudioScene extends Phaser.Scene {
     this.input.keyboard.on('keydown-H', () => this.toggleDebug('hotspots'));
     this.input.keyboard.on('keydown-ONE', () => this.cameraDirector.setOverview());
     this.input.keyboard.on('keydown-TWO', () => this.cameraDirector.setFocus(936, 600));
-    this.input.keyboard.on('keydown-THREE', () => this.cameraDirector.setFollow(this.testActor));
+    this.input.keyboard.on('keydown-THREE', () => {
+      if (this.avatar?.container) {
+        this.cameraDirector.setFollow(this.avatar.container);
+      }
+    });
   }
 
   toggleDebug(layer) {
@@ -531,56 +584,14 @@ export class StudioScene extends Phaser.Scene {
   }
 
   moveActorTo(targetCol, targetRow, onArrival = null) {
-    const path = this.pathFinder.findPath(
-      this.testActor.col,
-      this.testActor.row,
-      targetCol,
-      targetRow,
-      { allowStartOnReserved: true, allowTargetOnReserved: false }
-    );
-
-    if (path && path.length > 0) {
-      this.testActor.onArrival = onArrival;
-      this.testActor.path = path.map((step) => {
-        const center = this.isoGrid.getCellCenter(step.col, step.row);
-        return { col: step.col, row: step.row, x: center.x, y: center.y, dir: step.dir };
-      });
+    if (this.avatar) {
+      this.avatar.moveTo(targetCol, targetRow, onArrival);
     }
   }
 
   update(time, delta) {
-    const dt = delta / 1000;
-
-    // Advance test actor along path if active
-    if (this.testActor.path && this.testActor.path.length > 0) {
-      const targetWaypoint = this.testActor.path[0];
-      const dx = targetWaypoint.x - this.testActor.x;
-      const dy = targetWaypoint.y - this.testActor.y;
-      const dist = Math.hypot(dx, dy);
-
-      const step = this.testActor.speedPxPerSec * dt;
-
-      if (dist <= step) {
-        this.testActor.x = targetWaypoint.x;
-        this.testActor.y = targetWaypoint.y;
-        this.testActor.col = targetWaypoint.col;
-        this.testActor.row = targetWaypoint.row;
-        this.testActor.path.shift();
-
-        // Check if finished entire path
-        if (this.testActor.path.length === 0 && this.testActor.onArrival) {
-          const cb = this.testActor.onArrival;
-          this.testActor.onArrival = null;
-          cb();
-        }
-      } else {
-        this.testActor.x += (dx / dist) * step;
-        this.testActor.y += (dy / dist) * step;
-      }
-
-      this.updateTestMarkerVisual();
-    }
-
-    this.cameraDirector.update(time, delta);
+    this.avatar?.update(time, delta);
+    this.roboCat?.update(time, delta);
+    this.cameraDirector?.update(time, delta);
   }
 }

@@ -70,6 +70,10 @@ export class ContentPanel {
     this.backdropEl.classList.add('is-open');
     this.backdropEl.setAttribute('aria-hidden', 'false');
 
+    if (this.callbacks.onOpen) {
+      this.callbacks.onOpen(contentKey);
+    }
+
     // Focus close button for accessibility
     const closeBtn = this.panelEl.querySelector('.studio-panel-close');
     if (closeBtn) {
@@ -263,6 +267,10 @@ export class ContentPanel {
                 <span>🐾 Погладить котика (Purr!)</span>
                 <span>❤️</span>
               </button>
+              <button class="studio-cat-btn" data-cat-action="follow">
+                <span>⚡ Робо-кот: режим следования</span>
+                <span>🐾</span>
+              </button>
             </div>
           `,
         };
@@ -308,6 +316,26 @@ export class ContentPanel {
         if (bubble) {
           bubble.innerHTML = 'Мур-р-р-р! ⚡❤️ Энергетический уровень на 100%! Приятно познакомиться!';
           bubble.style.borderColor = '#ff454d';
+        }
+        if (this.callbacks.onAction) {
+          this.callbacks.onAction('purr');
+        }
+      });
+    }
+
+    // Hook cat follow toggle action
+    const followBtn = this.panelEl.querySelector('[data-cat-action="follow"]');
+    if (followBtn) {
+      followBtn.addEventListener('click', () => {
+        if (this.callbacks.onAction) {
+          const isFollowing = this.callbacks.onAction('toggle-follow');
+          const bubble = this.panelEl.querySelector('.studio-cat-bubble');
+          if (bubble) {
+            bubble.innerHTML = isFollowing
+              ? 'Мяу! Режим следования включён. Куда идём? 🚀'
+              : 'Мр-р... Пойду вздремну на мягкой подушке. 💤';
+            bubble.style.borderColor = isFollowing ? '#00f0ff' : '#647386';
+          }
         }
       });
     }

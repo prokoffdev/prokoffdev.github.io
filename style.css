@@ -240,6 +240,10 @@ body.is-loaded .loader { display: none; }
 
 /* Header */
 
+.studio-mount {
+  margin: 80px auto 40px auto;
+}
+
 .site-header {
   position: fixed;
   top: 0; left: 0; right: 0;

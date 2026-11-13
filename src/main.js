@@ -1,3 +1,5 @@
+import './styles/studio.css';
+import './styles/panels.css';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { initTheme, themeToggleColorHooks } from './website/theme.js';

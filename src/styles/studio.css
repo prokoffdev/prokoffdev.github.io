@@ -1,0 +1,172 @@
+/* Studio Overlay & HUD Styles */
+.studio-mount {
+  position: relative;
+  width: 100%;
+  max-width: 1600px;
+  margin: 76px auto 32px auto;
+  overflow: hidden;
+  background: #111923;
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(100, 115, 134, 0.25);
+}
+
+.studio-mount canvas {
+  display: block;
+  width: 100% !important;
+  height: auto !important;
+  max-height: 85vh;
+  outline: none;
+}
+
+/* Studio HUD Header */
+.studio-hud-header {
+  position: absolute;
+  top: 16px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 60;
+  pointer-events: none;
+}
+
+.studio-hud-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(17, 25, 35, 0.85);
+  border: 1px solid rgba(100, 115, 134, 0.35);
+  border-radius: 999px;
+  padding: 6px 16px;
+  backdrop-filter: blur(10px);
+  pointer-events: auto;
+}
+
+.studio-hud-logo {
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+
+.studio-hud-logo span {
+  color: var(--accent, #ff454d);
+}
+
+.studio-hud-tagline {
+  font-size: 12px;
+  color: #94a3b8;
+  border-left: 1px solid rgba(148, 163, 184, 0.3);
+  padding-left: 10px;
+}
+
+/* Mode Switcher Pill */
+.studio-mode-switcher {
+  display: flex;
+  background: rgba(17, 25, 35, 0.9);
+  border: 1px solid rgba(100, 115, 134, 0.4);
+  border-radius: 999px;
+  padding: 4px;
+  gap: 4px;
+  backdrop-filter: blur(10px);
+  pointer-events: auto;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.studio-mode-btn {
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.studio-mode-btn:hover {
+  color: #f1f5f9;
+}
+
+.studio-mode-btn.is-active {
+  background: rgba(255, 69, 77, 0.15);
+  color: #ff454d;
+  box-shadow: 0 0 0 1px rgba(255, 69, 77, 0.4);
+}
+
+/* Controls Hint (Bottom Left) */
+.studio-controls-hint {
+  position: absolute;
+  bottom: 16px;
+  left: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(17, 25, 35, 0.85);
+  border: 1px solid rgba(100, 115, 134, 0.3);
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-size: 12px;
+  color: #cbd5e1;
+  backdrop-filter: blur(10px);
+  z-index: 60;
+  pointer-events: none;
+}
+
+.studio-key-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(36, 48, 62, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-family: monospace;
+  font-weight: 700;
+  color: #fff;
+  font-size: 11px;
+}
+
+/* Quick View floating prompt */
+.studio-quickview-hint {
+  position: absolute;
+  top: 76px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(17, 25, 35, 0.8);
+  border: 1px solid rgba(255, 69, 77, 0.3);
+  border-radius: 999px;
+  padding: 6px 18px;
+  font-size: 13px;
+  color: #e2e8f0;
+  backdrop-filter: blur(8px);
+  z-index: 60;
+  pointer-events: none;
+  animation: pulseHint 2.4s infinite ease-in-out;
+}
+
+@keyframes pulseHint {
+  0%, 100% { opacity: 0.85; transform: translateX(-50%) translateY(0); }
+  50% { opacity: 1; transform: translateX(-50%) translateY(-2px); }
+}
+
+@media (max-width: 768px) {
+  .studio-hud-tagline {
+    display: none;
+  }
+  .studio-controls-hint {
+    display: none;
+  }
+  .studio-quickview-hint {
+    font-size: 12px;
+    padding: 4px 14px;
+    top: 68px;
+  }
+}

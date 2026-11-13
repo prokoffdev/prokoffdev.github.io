@@ -3,7 +3,11 @@ import { IsoGrid } from '../core/IsoGrid.js';
 import { TileRenderer, STUDIO_PALETTE } from '../core/TileRenderer.js';
 import { CollisionGrid, CellType } from '../navigation/CollisionGrid.js';
 import { PathFinder } from '../navigation/PathFinder.js';
-import { CameraDirector, CameraMode } from '../camera/CameraDirector.js';
+import { CameraDirector } from '../camera/CameraDirector.js';
+import { HotspotManager } from '../interactions/HotspotManager.js';
+import { InteractionRouter, InteractionMode } from '../interactions/InteractionRouter.js';
+import { ContentPanel } from '../ui/ContentPanel.js';
+import { StudioHud } from '../ui/StudioHud.js';
 import sceneLayoutData from '../../data/studio/scene-layout.json' with { type: 'json' };
 import collisionMapData from '../../data/studio/collision-map.json' with { type: 'json' };
 import hotspotsData from '../../data/studio/hotspots.json' with { type: 'json' };
@@ -16,6 +20,10 @@ export class StudioScene extends Phaser.Scene {
     this.collisionGrid = null;
     this.pathFinder = null;
     this.cameraDirector = null;
+    this.hotspotManager = null;
+    this.interactionRouter = null;
+    this.contentPanel = null;
+    this.studioHud = null;
 
     // Graphics Layers
     this.floorGraphics = null;
@@ -32,26 +40,65 @@ export class StudioScene extends Phaser.Scene {
       hotspots: false,
     };
 
-    // Test marker for Stage 2 pathfinding / follow camera verification
+    // Test actor for pathfinding & follow camera verification
     this.testActor = {
       col: 14,
       row: 6,
       x: 936,
       y: 690,
       path: [],
+      onArrival: null,
       speedPxPerSec: 160,
     };
     this.testMarkerGraphics = null;
   }
 
   create() {
+    const mountContainer = this.game.canvas.parentElement;
+
     // 1. Core Systems
     this.isoGrid = new IsoGrid();
     this.collisionGrid = new CollisionGrid(collisionMapData);
     this.pathFinder = new PathFinder(this.collisionGrid, this.isoGrid);
     this.cameraDirector = new CameraDirector(this.cameras.main);
 
-    // 2. Rendering Layers
+    // 2. UI & Interaction Modules
+    this.contentPanel = new ContentPanel(mountContainer, {
+      onClose: () => {
+        this.cameraDirector.setOverview();
+      },
+      onNavigate: (targetKey) => {
+        const hotspot = this.hotspotManager?.getHotspotByContentKey(targetKey);
+        if (hotspot) {
+          const pt = this.interactionRouter.getHotspotCenterPoint(hotspot);
+          this.cameraDirector.setFocus(pt.x, pt.y);
+        }
+      },
+    });
+
+    this.hotspotManager = new HotspotManager(this, {
+      onSelect: (hotspot) => {
+        this.interactionRouter.handleHotspotSelected(hotspot, this.testActor);
+      },
+    });
+
+    this.interactionRouter = new InteractionRouter({
+      isoGrid: this.isoGrid,
+      cameraDirector: this.cameraDirector,
+      contentPanel: this.contentPanel,
+      hotspotManager: this.hotspotManager,
+      onMoveTo: (targetCol, targetRow, onArrival) => {
+        this.moveActorTo(targetCol, targetRow, onArrival);
+      },
+    });
+
+    this.studioHud = new StudioHud(mountContainer, {
+      onModeChange: (newMode) => {
+        this.interactionRouter.setMode(newMode);
+      },
+    });
+
+    // 3. Rendering Layers
     this.createFloorAndWalls();
     this.createFurnitureGreybox();
     this.createDebugLayers();
@@ -63,12 +110,10 @@ export class StudioScene extends Phaser.Scene {
   }
 
   createFloorAndWalls() {
-    // Backdrop fill
     const bg = this.add.graphics();
     bg.fillStyle(STUDIO_PALETTE.BACKDROP, 1);
     bg.fillRect(0, 0, 1600, 1000);
 
-    // Walls
     this.wallGraphics = this.add.graphics();
     const walls = this.isoGrid.getWallPolygons(280);
 
@@ -108,7 +153,6 @@ export class StudioScene extends Phaser.Scene {
     this.floorGraphics = this.add.graphics();
     const corners = this.isoGrid.getFloorCorners();
 
-    // Base platform thickness (lower edge)
     const platformHeight = 24;
     this.floorGraphics.fillStyle(0x131922, 1);
     this.floorGraphics.beginPath();
@@ -167,7 +211,7 @@ export class StudioScene extends Phaser.Scene {
     this.propsGraphics = this.add.graphics();
     const g = this.propsGraphics;
 
-    // 1. Workstation Desk (FUR-001: col 14, row 3, 9x5, height 68px)
+    // Workstation Desk (FUR-001)
     TileRenderer.drawIsoBlock(g, this.isoGrid, {
       col: 14,
       row: 3,
@@ -179,7 +223,7 @@ export class StudioScene extends Phaser.Scene {
       rightColor: 0x141a22,
     });
 
-    // Dual Monitors on desk (PROP-001 at col 14, row 1, elevation 64)
+    // Monitors (PROP-001)
     TileRenderer.drawIsoBlock(g, this.isoGrid, {
       col: 14,
       row: 1,
@@ -203,7 +247,7 @@ export class StudioScene extends Phaser.Scene {
       elevation: 64,
     });
 
-    // PC Tower (PROP-002: col 9, row 3, 2x2, height 85px)
+    // PC Tower (PROP-002)
     TileRenderer.drawIsoBlock(g, this.isoGrid, {
       col: 9,
       row: 3,
@@ -215,7 +259,7 @@ export class StudioScene extends Phaser.Scene {
       rightColor: 0x0b0e13,
     });
 
-    // Ergonomic Chair (FUR-002: col 14, row 6, 2x2, height 80px)
+    // Chair (FUR-002)
     TileRenderer.drawIsoBlock(g, this.isoGrid, {
       col: 14,
       row: 6,
@@ -238,7 +282,7 @@ export class StudioScene extends Phaser.Scene {
       elevation: 38,
     });
 
-    // Bed (FUR-003: col 5, row 9, 7x5, height 44px)
+    // Bed (FUR-003)
     TileRenderer.drawIsoBlock(g, this.isoGrid, {
       col: 2,
       row: 8,
@@ -249,7 +293,6 @@ export class StudioScene extends Phaser.Scene {
       leftColor: STUDIO_PALETTE.BED_FRAME,
       rightColor: 0x12171f,
     });
-    // Bed blanket (red accent)
     TileRenderer.drawIsoBlock(g, this.isoGrid, {
       col: 5,
       row: 8,
@@ -262,7 +305,7 @@ export class StudioScene extends Phaser.Scene {
       elevation: 38,
     });
 
-    // Bedside Nightstand (FUR-004: col 1, row 8, 2x2, height 42px)
+    // Nightstand (FUR-004)
     TileRenderer.drawIsoBlock(g, this.isoGrid, {
       col: 1,
       row: 8,
@@ -274,7 +317,7 @@ export class StudioScene extends Phaser.Scene {
       rightColor: 0x14181f,
     });
 
-    // Wall Bookshelf (FUR-005 on Wall B at col 0, row 3, elevation 120px)
+    // Wall Bookshelf (FUR-005)
     TileRenderer.drawIsoBlock(g, this.isoGrid, {
       col: 0,
       row: 3,
@@ -287,7 +330,7 @@ export class StudioScene extends Phaser.Scene {
       elevation: 120,
     });
 
-    // Project Pinboard (PROP-009 on Wall A at col 18, row 0, elevation 100px)
+    // Project Pinboard (PROP-009)
     TileRenderer.drawIsoBlock(g, this.isoGrid, {
       col: 18,
       row: 0,
@@ -300,7 +343,7 @@ export class StudioScene extends Phaser.Scene {
       elevation: 100,
     });
 
-    // Cat Charging Station Cushion (FUR-008: col 17, row 10, 2x1)
+    // Cat Charging Station Cushion (FUR-008)
     TileRenderer.drawIsoBlock(g, this.isoGrid, {
       col: 17,
       row: 10,
@@ -412,39 +455,69 @@ export class StudioScene extends Phaser.Scene {
     const g = this.testMarkerGraphics;
     g.clear();
 
-    // Draw base shadow
+    // Base shadow
     g.fillStyle(0x000000, 0.4);
     g.fillEllipse(this.testActor.x, this.testActor.y, 28, 14);
 
-    // Draw cyan waypoint beacon
+    // Cyan waypoint beacon
     g.fillStyle(STUDIO_PALETTE.CYAN_ACCENT, 0.9);
     g.fillCircle(this.testActor.x, this.testActor.y - 18, 9);
     g.lineStyle(2, 0xffffff, 1);
     g.strokeCircle(this.testActor.x, this.testActor.y - 18, 9);
 
-    // Light beam
     g.lineStyle(1.5, STUDIO_PALETTE.CYAN_ACCENT, 0.7);
     g.lineBetween(this.testActor.x, this.testActor.y - 18, this.testActor.x, this.testActor.y);
   }
 
   setupInteractionAndControls() {
-    // Pointer click to move test marker (Pathfinding A* test)
-    this.input.on('pointerdown', (pointer) => {
-      // Convert screen click into world tile
+    // Pointer move: hover feedback and tooltip
+    this.input.on('pointermove', (pointer) => {
       const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
-      const clickedCell = this.isoGrid.screenToCell(worldPoint.x, worldPoint.y);
+      this.hotspotManager?.handlePointerMove(worldPoint.x, worldPoint.y, pointer.x, pointer.y);
+    });
 
-      if (this.isoGrid.isValidCell(clickedCell.col, clickedCell.row)) {
-        this.moveActorTo(clickedCell.col, clickedCell.row);
+    // Pointer click: hotspot interaction or pathfind
+    this.input.on('pointerdown', (pointer) => {
+      // Do not process canvas click if modal panel is open
+      if (this.contentPanel?.isOpen) return;
+
+      const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+
+      // Check if clicking a hotspot
+      const hit = this.hotspotManager?.handlePointerDown(worldPoint.x, worldPoint.y);
+      if (hit) return;
+
+      // In Explore Mode: click on floor walks actor
+      if (this.interactionRouter?.getMode() === InteractionMode.EXPLORE) {
+        const clickedCell = this.isoGrid.screenToCell(worldPoint.x, worldPoint.y);
+        if (this.isoGrid.isValidCell(clickedCell.col, clickedCell.row)) {
+          this.moveActorTo(clickedCell.col, clickedCell.row);
+        }
       }
     });
 
-    // Keyboard controls for debug & camera modes
+    // Keydown 'E': interact with nearest hotspot in explore mode
+    this.input.keyboard.on('keydown-E', () => {
+      if (this.contentPanel?.isOpen) return;
+      const nearest = this.interactionRouter?.findNearestInteractiveHotspot(this.testActor.col, this.testActor.row);
+      if (nearest) {
+        this.interactionRouter.triggerInteraction(nearest);
+      }
+    });
+
+    // Keydown 'ESC': close modal panel
+    this.input.keyboard.on('keydown-ESC', () => {
+      if (this.contentPanel?.isOpen) {
+        this.contentPanel.close();
+      }
+    });
+
+    // Keyboard debug & camera toggles
     this.input.keyboard.on('keydown-G', () => this.toggleDebug('grid'));
     this.input.keyboard.on('keydown-C', () => this.toggleDebug('collision'));
     this.input.keyboard.on('keydown-H', () => this.toggleDebug('hotspots'));
     this.input.keyboard.on('keydown-ONE', () => this.cameraDirector.setOverview());
-    this.input.keyboard.on('keydown-TWO', () => this.cameraDirector.setFocus(936, 600)); // Focus workstation
+    this.input.keyboard.on('keydown-TWO', () => this.cameraDirector.setFocus(936, 600));
     this.input.keyboard.on('keydown-THREE', () => this.cameraDirector.setFollow(this.testActor));
   }
 
@@ -457,7 +530,7 @@ export class StudioScene extends Phaser.Scene {
     }
   }
 
-  moveActorTo(targetCol, targetRow) {
+  moveActorTo(targetCol, targetRow, onArrival = null) {
     const path = this.pathFinder.findPath(
       this.testActor.col,
       this.testActor.row,
@@ -467,6 +540,7 @@ export class StudioScene extends Phaser.Scene {
     );
 
     if (path && path.length > 0) {
+      this.testActor.onArrival = onArrival;
       this.testActor.path = path.map((step) => {
         const center = this.isoGrid.getCellCenter(step.col, step.row);
         return { col: step.col, row: step.row, x: center.x, y: center.y, dir: step.dir };
@@ -492,6 +566,13 @@ export class StudioScene extends Phaser.Scene {
         this.testActor.col = targetWaypoint.col;
         this.testActor.row = targetWaypoint.row;
         this.testActor.path.shift();
+
+        // Check if finished entire path
+        if (this.testActor.path.length === 0 && this.testActor.onArrival) {
+          const cb = this.testActor.onArrival;
+          this.testActor.onArrival = null;
+          cb();
+        }
       } else {
         this.testActor.x += (dx / dist) * step;
         this.testActor.y += (dy / dist) * step;

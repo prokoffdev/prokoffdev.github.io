@@ -145,7 +145,12 @@ export class StudioBootstrap {
         };
 
         this.game = new Phaser.Game(gameConfig);
-        this.createDebugToolbar();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const isDebug = urlParams.get('debug') === '1' || urlParams.get('debug') === 'true';
+        if (isDebug) {
+          this.createDebugToolbar();
+        }
       } catch (err) {
         console.error('[StudioBootstrap] Failed to launch Phaser game:', err);
         this.status = StudioStatus.ERROR;

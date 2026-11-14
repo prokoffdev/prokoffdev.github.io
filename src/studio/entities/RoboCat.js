@@ -84,12 +84,25 @@ export class RoboCat {
     // Drop shadow beneath paws
     this.shadow = this.scene.add.graphics();
     this.shadow.fillStyle(0x05080c, 0.4);
-    this.shadow.fillEllipse(0, 0, 32, 14);
+    this.shadow.fillEllipse(0, 0, 42, 18);
     this.container.add(this.shadow);
 
-    // Visual graphics
-    this.visual = this.scene.add.graphics();
-    this.container.add(this.visual);
+    // Check if raster 2.5D sprite textures are loaded
+    this.hasRasterTextures = Boolean(
+      this.scene && this.scene.textures && this.scene.textures.exists('cat_idle')
+    );
+
+    if (this.hasRasterTextures) {
+      // High-res 2.5D sprite with bottom-center anchor
+      this.sprite = this.scene.add.sprite(0, 0, 'cat_sleep');
+      this.sprite.setOrigin(0.5, 0.90);
+      this.sprite.setScale(0.42);
+      this.container.add(this.sprite);
+    } else {
+      // Procedural fallback graphics
+      this.visual = this.scene.add.graphics();
+      this.container.add(this.visual);
+    }
 
     // Hologram projection container
     this.hologram = this.scene.add.graphics();
@@ -343,13 +356,74 @@ export class RoboCat {
    * @param {number} time
    */
   renderVisual(time) {
+    const state = this.fsm.currentState;
+    const isFacingLeft = this.currentDirection === 'iso_sw' || this.currentDirection === 'iso_nw';
+
+    // If raster 2.5D sprite is active, update texture, flip, and bobbing
+    if (this.sprite) {
+      const breath = Math.sin(time * 0.004) * 1.0;
+      const walkBob = this.isMoving ? Math.abs(Math.sin(time * 0.016)) * 2.5 : 0;
+      this.sprite.y = -walkBob + breath;
+
+      if (state === 'sleep') {
+        if (this.sprite.texture.key !== 'cat_sleep') {
+          this.sprite.setTexture('cat_sleep');
+          this.sprite.setScale(0.42);
+        }
+        this.sprite.setFlipX(false);
+        if (this.hologram) this.hologram.setVisible(false);
+      } else if (state === 'walk' || state === 'follow' || state === 'return_base') {
+        if (this.sprite.texture.key !== 'cat_walk') {
+          this.sprite.setTexture('cat_walk');
+          this.sprite.setScale(0.38);
+        }
+        this.sprite.setFlipX(isFacingLeft);
+        if (this.hologram) this.hologram.setVisible(false);
+      } else if (state === 'react' || state === 'purr' || state === 'surprise') {
+        if (this.sprite.texture.key !== 'cat_react') {
+          this.sprite.setTexture('cat_react');
+          this.sprite.setScale(0.38);
+        }
+        this.sprite.setFlipX(isFacingLeft);
+        if (this.hologram) this.hologram.setVisible(false);
+      } else if (state === 'assist') {
+        if (this.sprite.texture.key !== 'cat_idle') {
+          this.sprite.setTexture('cat_idle');
+          this.sprite.setScale(0.38);
+        }
+        this.sprite.setFlipX(false);
+        if (this.hologram) {
+          this.hologram.setVisible(true);
+          this.hologram.clear();
+          const pulse = Math.sin(time * 0.006) * 0.15 + 0.85;
+          this.hologram.lineStyle(1.5, 0x00ffff, 0.8 * pulse);
+          this.hologram.strokeRect(-24, -115 + breath, 48, 38);
+          this.hologram.fillStyle(0x00f0ff, 0.15 * pulse);
+          this.hologram.fillRect(-24, -115 + breath, 48, 38);
+          this.hologram.lineBetween(0, -60, -20, -77);
+          this.hologram.lineBetween(0, -60, 20, -77);
+          for (let ly = -110; ly < -80; ly += 6) {
+            this.hologram.lineStyle(1, 0x00ffff, 0.45 * pulse);
+            this.hologram.lineBetween(-20, ly + breath, 20, ly + breath);
+          }
+        }
+      } else {
+        // idle
+        if (this.sprite.texture.key !== 'cat_idle') {
+          this.sprite.setTexture('cat_idle');
+          this.sprite.setScale(0.38);
+        }
+        this.sprite.setFlipX(isFacingLeft);
+        if (this.hologram) this.hologram.setVisible(false);
+      }
+      return;
+    }
+
     if (!this.visual) return;
     const g = this.visual;
     g.clear();
 
-    const state = this.fsm.currentState;
     const isSleeping = state === 'sleep';
-    const isFacingLeft = this.currentDirection === 'iso_sw' || this.currentDirection === 'iso_nw';
     const dirSign = isFacingLeft ? -1 : 1;
 
     // Oscillations

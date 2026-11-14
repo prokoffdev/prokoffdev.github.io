@@ -58,6 +58,27 @@ export class StudioScene extends Phaser.Scene {
     };
   }
 
+  preload() {
+    const base = import.meta.env.BASE_URL || '/';
+    const spr = (file) => `${base.replace(/\/$/, '')}/assets/sprites/${file}`;
+
+    // Master High-Fidelity 2.5D Room Environment
+    this.load.image('room_environment', spr('room_clean_base.png'));
+
+    // Dynamic Walk & Interaction Sprites (CHR-001)
+    this.load.image('human_idle', spr('human_idle.png'));
+    this.load.image('human_walk', spr('human_walk.png'));
+    this.load.image('human_greeting', spr('human_greeting.png'));
+    this.load.image('human_typing', spr('human_typing.png'));
+    this.load.image('human_thinking', spr('human_thinking.png'));
+
+    // Companion Sprites (PET-001)
+    this.load.image('cat_idle', spr('cat_idle.png'));
+    this.load.image('cat_sleep', spr('cat_sleep.png'));
+    this.load.image('cat_walk', spr('cat_walk.png'));
+    this.load.image('cat_react', spr('cat_react.png'));
+  }
+
   create() {
     const mountContainer = this.game.canvas.parentElement;
 
@@ -70,6 +91,11 @@ export class StudioScene extends Phaser.Scene {
     // 2. Entities
     this.avatar = new Avatar(this, this.isoGrid, this.pathFinder, 14, 6);
     this.roboCat = new RoboCat(this, this.isoGrid, this.pathFinder, 18, 9);
+
+    if (this.textures && this.textures.exists('room_environment')) {
+      this.avatar.container?.setVisible(false);
+      this.roboCat.container?.setVisible(false);
+    }
 
     // 3. UI & Interaction Modules
     this.contentPanel = new ContentPanel(mountContainer, {
@@ -129,9 +155,28 @@ export class StudioScene extends Phaser.Scene {
       onModeChange: (newMode) => {
         this.interactionRouter.setMode(newMode);
         if (newMode === InteractionMode.EXPLORE) {
+          if (this.roomBg) {
+            this.avatar.container?.setVisible(true);
+            this.roboCat.container?.setVisible(true);
+            if (this.avatar.currentCol === 14 && this.avatar.currentRow === 6) {
+              this.avatar.currentCol = 12;
+              this.avatar.currentRow = 7;
+              this.avatar.updatePosition();
+            }
+            if (this.roboCat.currentCol === 18 && this.roboCat.currentRow === 9) {
+              this.roboCat.currentCol = 12;
+              this.roboCat.currentRow = 8;
+              this.roboCat.updatePosition();
+            }
+          }
           if (this.avatar.fsm.is('typing') || this.avatar.fsm.is('thinking')) {
             this.avatar.fsm.dispatch('USER_START_MOVE');
             this.avatar.fsm.forceState('idle');
+          }
+        } else {
+          if (this.roomBg) {
+            this.avatar.container?.setVisible(false);
+            this.roboCat.container?.setVisible(false);
           }
         }
       },
@@ -139,7 +184,7 @@ export class StudioScene extends Phaser.Scene {
 
     // 4. Rendering Layers
     this.createFloorAndWalls();
-    this.createFurnitureGreybox();
+    this.createFurniture();
     this.createAmbientVfx();
     this.createDebugLayers();
     this.setupInteractionAndControls();
@@ -153,6 +198,13 @@ export class StudioScene extends Phaser.Scene {
     const bg = this.add.graphics();
     bg.fillStyle(STUDIO_PALETTE.BACKDROP, 1);
     bg.fillRect(0, 0, 1600, 1000);
+
+    if (this.textures && this.textures.exists('room_environment')) {
+      this.roomBg = this.add.image(800, 500, 'room_environment');
+      this.roomBg.setDisplaySize(1600, 900);
+      this.roomBg.setDepth(10);
+      return;
+    }
 
     this.wallGraphics = this.add.graphics();
     const walls = this.isoGrid.getWallPolygons(280);
@@ -247,11 +299,15 @@ export class StudioScene extends Phaser.Scene {
     this.floorGraphics.strokePath();
   }
 
-  createFurnitureGreybox() {
+  createFurniture() {
+    if (this.roomBg) {
+      return;
+    }
+
     this.propsGraphics = this.add.graphics();
     const g = this.propsGraphics;
 
-    // Workstation Desk (FUR-001)
+    // Workstation Desk (FUR-001) base
     TileRenderer.drawIsoBlock(g, this.isoGrid, {
       col: 14,
       row: 3,
@@ -263,6 +319,134 @@ export class StudioScene extends Phaser.Scene {
       rightColor: 0x141a22,
     });
 
+    // Chair (FUR-002)
+    TileRenderer.drawIsoBlock(g, this.isoGrid, {
+      col: 14,
+      row: 6,
+      widthCols: 2,
+      depthRows: 2,
+      heightPx: 38,
+      topColor: STUDIO_PALETTE.CHAIR_BODY,
+      leftColor: 0x1e2631,
+      rightColor: 0x151b24,
+    });
+    TileRenderer.drawIsoBlock(g, this.isoGrid, {
+      col: 14,
+      row: 5,
+      widthCols: 2,
+      depthRows: 1,
+      heightPx: 75,
+      topColor: STUDIO_PALETTE.CHAIR_ACCENT,
+      leftColor: 0x8a242a,
+      rightColor: 0x5e161b,
+      elevation: 38,
+    });
+
+    // Cat Charging Station Cushion (FUR-008)
+    TileRenderer.drawIsoBlock(g, this.isoGrid, {
+      col: 17,
+      row: 10,
+      widthCols: 2,
+      depthRows: 1,
+      heightPx: 14,
+      topColor: 0x3b4859,
+      leftColor: 0x222a35,
+      rightColor: 0x181e26,
+    });
+
+    // Check if raster textures are loaded
+    const hasRaster = Boolean(this.textures && this.textures.exists('prop_bed'));
+
+    if (hasRaster) {
+      this.createRasterProps();
+    } else {
+      this.createFurnitureGreyboxFallback(g);
+    }
+  }
+
+  createRasterProps() {
+    // Wall B Window Skyline
+    if (this.textures.exists('prop_window')) {
+      const win = this.add.image(350, 310, 'prop_window');
+      win.setOrigin(0.5, 0.5);
+      win.setScale(1.15);
+      win.setDepth(85);
+    }
+
+    // Wall Corner Red Neon Symbol
+    if (this.textures.exists('prop_neon_code')) {
+      const neon = this.add.image(680, 220, 'prop_neon_code');
+      neon.setOrigin(0.5, 0.5);
+      neon.setScale(1.25);
+      neon.setDepth(90);
+    }
+
+    // Wall B Shelf with Books & Hanging Ivy
+    if (this.textures.exists('prop_shelf')) {
+      const shelf = this.add.image(350, 370, 'prop_shelf');
+      shelf.setOrigin(0.5, 0.5);
+      shelf.setScale(1.15);
+      shelf.setDepth(110);
+    }
+
+    // Wall A Pinboard with Sticky Notes & Roadmap
+    if (this.textures.exists('prop_pinboard')) {
+      const pin = this.add.image(1240, 470, 'prop_pinboard');
+      pin.setOrigin(0.5, 0.5);
+      pin.setScale(1.15);
+      pin.setDepth(110);
+    }
+
+    // Dual Monitors on Workstation Desk
+    if (this.textures.exists('prop_monitors')) {
+      const mon = this.add.image(1075, 470, 'prop_monitors');
+      mon.setOrigin(0.5, 0.6);
+      mon.setScale(1.15);
+      mon.setDepth(1720);
+    }
+
+    // Gaming PC Tower with Red RGB Fans & Plant
+    if (this.textures.exists('prop_pc_tower')) {
+      const pc = this.add.image(880, 500, 'prop_pc_tower');
+      pc.setOrigin(0.5, 0.7);
+      pc.setScale(1.05);
+      pc.setDepth(1220);
+    }
+
+    // Bed with Pillow & Red Blanket
+    if (this.textures.exists('prop_bed')) {
+      const bed = this.add.image(540, 640, 'prop_bed');
+      bed.setOrigin(0.5, 0.55);
+      bed.setScale(1.12);
+      bed.setDepth(1420);
+    }
+
+    // Bedside Nightstand with Glowing Lamp
+    if (this.textures.exists('prop_nightstand')) {
+      const ns = this.add.image(420, 570, 'prop_nightstand');
+      ns.setOrigin(0.5, 0.6);
+      ns.setScale(1.05);
+      ns.setDepth(1320);
+    }
+
+    // Coffee Table with Game Controller
+    if (this.textures.exists('prop_table')) {
+      const table = this.add.image(740, 680, 'prop_table');
+      table.setOrigin(0.5, 0.55);
+      table.setScale(1.05);
+      table.setDepth(1820);
+    }
+
+    // Potted Floor Plant
+    if (this.textures.exists('prop_plant')) {
+      const plant = this.add.image(1310, 690, 'prop_plant');
+      plant.setOrigin(0.5, 0.8);
+      plant.setScale(1.05);
+      plant.setDepth(2420);
+    }
+  }
+
+  createFurnitureGreyboxFallback(g) {
     // Monitors (PROP-001)
     TileRenderer.drawIsoBlock(g, this.isoGrid, {
       col: 14,
@@ -297,29 +481,6 @@ export class StudioScene extends Phaser.Scene {
       topColor: 0x222a36,
       leftColor: STUDIO_PALETTE.PC_TOWER,
       rightColor: 0x0b0e13,
-    });
-
-    // Chair (FUR-002)
-    TileRenderer.drawIsoBlock(g, this.isoGrid, {
-      col: 14,
-      row: 6,
-      widthCols: 2,
-      depthRows: 2,
-      heightPx: 38,
-      topColor: STUDIO_PALETTE.CHAIR_BODY,
-      leftColor: 0x1e2631,
-      rightColor: 0x151b24,
-    });
-    TileRenderer.drawIsoBlock(g, this.isoGrid, {
-      col: 14,
-      row: 5,
-      widthCols: 2,
-      depthRows: 1,
-      heightPx: 75,
-      topColor: STUDIO_PALETTE.CHAIR_ACCENT,
-      leftColor: 0x8a242a,
-      rightColor: 0x5e161b,
-      elevation: 38,
     });
 
     // Bed (FUR-003)
@@ -381,18 +542,6 @@ export class StudioScene extends Phaser.Scene {
       leftColor: 0x5e4936,
       rightColor: 0x3d2f21,
       elevation: 100,
-    });
-
-    // Cat Charging Station Cushion (FUR-008)
-    TileRenderer.drawIsoBlock(g, this.isoGrid, {
-      col: 17,
-      row: 10,
-      widthCols: 2,
-      depthRows: 1,
-      heightPx: 14,
-      topColor: 0x3b4859,
-      leftColor: 0x222a35,
-      rightColor: 0x181e26,
     });
 
     // Small Props: Phone (PROP-006) & Gamepad (PROP-007)

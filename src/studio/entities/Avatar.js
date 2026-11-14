@@ -76,15 +76,28 @@ export class Avatar {
     // Drop shadow at feet
     this.shadow = this.scene.add.graphics();
     this.shadow.fillStyle(0x05080c, 0.45);
-    this.shadow.fillEllipse(0, 0, 40, 18);
+    this.shadow.fillEllipse(0, 0, 48, 20);
     this.container.add(this.shadow);
 
-    // Procedural stylized avatar graphics (matching concept art)
-    this.visual = this.scene.add.graphics();
-    this.container.add(this.visual);
+    // Check if raster 2.5D sprite textures are loaded
+    this.hasRasterTextures = Boolean(
+      this.scene && this.scene.textures && this.scene.textures.exists('human_idle')
+    );
+
+    if (this.hasRasterTextures) {
+      // High-res 2.5D sprite with bottom-center anchor
+      this.sprite = this.scene.add.sprite(0, 0, 'human_typing');
+      this.sprite.setOrigin(0.5, 0.92);
+      this.sprite.setScale(0.40);
+      this.container.add(this.sprite);
+    } else {
+      // Procedural stylized avatar graphics fallback
+      this.visual = this.scene.add.graphics();
+      this.container.add(this.visual);
+    }
 
     // Speech bubble container (for greetings)
-    this.speechBubble = this.scene.add.container(0, -110);
+    this.speechBubble = this.scene.add.container(0, -145);
     this.speechBubble.setVisible(false);
     this.container.add(this.speechBubble);
 
@@ -297,11 +310,57 @@ export class Avatar {
    * @param {number} time
    */
   renderVisual(time) {
+    const state = this.fsm.currentState;
+    const isFacingLeft = this.currentDirection === 'iso_sw' || this.currentDirection === 'iso_nw';
+
+    // If raster 2.5D sprite is active, update texture, flip, and bobbing
+    if (this.sprite) {
+      const breath = Math.sin(time * 0.003) * 1.5;
+      const walkBob = this.isMoving ? Math.abs(Math.sin(time * 0.012)) * 3.5 : 0;
+      const walkTilt = this.isMoving ? Math.sin(time * 0.012) * 0.03 : 0;
+
+      this.sprite.y = -walkBob + breath;
+      this.sprite.rotation = walkTilt;
+
+      if (state === 'typing') {
+        if (this.sprite.texture.key !== 'human_typing') {
+          this.sprite.setTexture('human_typing');
+          this.sprite.setScale(0.40);
+        }
+        this.sprite.setFlipX(false);
+      } else if (state === 'thinking') {
+        if (this.sprite.texture.key !== 'human_thinking') {
+          this.sprite.setTexture('human_thinking');
+          this.sprite.setScale(0.40);
+        }
+        this.sprite.setFlipX(false);
+      } else if (state === 'greeting') {
+        if (this.sprite.texture.key !== 'human_greeting') {
+          this.sprite.setTexture('human_greeting');
+          this.sprite.setScale(0.35);
+        }
+        this.sprite.setFlipX(false);
+      } else if (state === 'walk') {
+        if (this.sprite.texture.key !== 'human_walk') {
+          this.sprite.setTexture('human_walk');
+          this.sprite.setScale(0.35);
+        }
+        this.sprite.setFlipX(isFacingLeft);
+      } else {
+        // idle, stand_up, sit_down, interact
+        if (this.sprite.texture.key !== 'human_idle') {
+          this.sprite.setTexture('human_idle');
+          this.sprite.setScale(0.35);
+        }
+        this.sprite.setFlipX(isFacingLeft);
+      }
+      return;
+    }
+
     if (!this.visual) return;
     const g = this.visual;
     g.clear();
 
-    const state = this.fsm.currentState;
     const isDeskFacing = state === 'typing' || state === 'thinking' || state === 'sit_down';
 
     // Animation oscillations
@@ -369,7 +428,6 @@ export class Avatar {
 
     // Standing / Walking / Greeting / Idle
     // Directional orientation: mirror or offset details
-    const isFacingLeft = this.currentDirection === 'iso_sw' || this.currentDirection === 'iso_nw';
     const dirSign = isFacingLeft ? -1 : 1;
 
     // Legs

@@ -4,12 +4,13 @@ import { VideoPhase, LivingVideoStudio } from '../src/studio/video/LivingVideoSt
 import { StudioDisplayMode } from '../src/studio/core/StudioBootstrap.js';
 
 describe('Living Video Diorama & Phase Control Tests', () => {
-  it('should define all 4 interactive video phases correctly', () => {
+  it('should define all 5 interactive video phases correctly', () => {
     assert.equal(VideoPhase.CODING, 'CODING');
+    assert.equal(VideoPhase.CAT_REACT, 'CAT_REACT');
     assert.equal(VideoPhase.COFFEE, 'COFFEE');
     assert.equal(VideoPhase.BUILD, 'BUILD');
     assert.equal(VideoPhase.RELAX, 'RELAX');
-    assert.equal(Object.keys(VideoPhase).length, 4);
+    assert.equal(Object.keys(VideoPhase).length, 5);
   });
 
   it('should define StudioDisplayMode enum with VIDEO and CANVAS', () => {
@@ -49,37 +50,39 @@ describe('Living Video Diorama & Phase Control Tests', () => {
     // 1. Initial State
     assert.equal(studio.phase, VideoPhase.CODING);
 
-    // 2. Trigger Coffee (only on button / hotspot click)
+    // 2. Trigger Cat reaction (wakes up, stretches, wags tail, returns to sleep)
+    studio.triggerCat();
+    assert.equal(studio.phase, VideoPhase.CAT_REACT);
+    assert.equal(mockVideo.currentTime, 4.02);
+
+    mockVideo.currentTime = 7.48;
+    studio.handleTimeUpdate();
+    assert.equal(studio.phase, VideoPhase.CODING);
+    assert.equal(mockVideo.currentTime, 0.05);
+    assert.equal(mockModal.openedSection, 'assistant-help');
+
+    // 3. Trigger Coffee (only on user trigger)
     studio.triggerCoffee();
     assert.equal(studio.phase, VideoPhase.COFFEE);
-    assert.equal(mockVideo.currentTime, 2.65);
+    assert.equal(mockVideo.currentTime, 7.52);
 
-    // Coffee completes at 3.6s and returns to coding loop
-    mockVideo.currentTime = 3.65;
+    // Coffee completes at 12.0s and returns to coding loop
+    mockVideo.currentTime = 11.98;
     studio.handleTimeUpdate();
     assert.equal(studio.phase, VideoPhase.CODING);
     assert.equal(mockVideo.currentTime, 0.05);
 
-    // 3. Trigger Build & Projects
+    // 4. Trigger Build & Projects
     studio.triggerBuild();
     assert.equal(studio.phase, VideoPhase.BUILD);
-    assert.equal(mockVideo.currentTime, 3.85);
-
-    mockVideo.currentTime = 5.85;
-    studio.handleTimeUpdate();
     assert.equal(mockModal.openedSection, 'projects');
-    assert.equal(mockVideo.paused, true);
 
-    // 4. Trigger Relax & Profile
+    // 5. Trigger Relax & Profile
     studio.triggerRelax();
     assert.equal(studio.phase, VideoPhase.RELAX);
-    assert.equal(mockVideo.currentTime, 5.85);
-
-    mockVideo.currentTime = 7.4;
-    studio.handleTimeUpdate();
     assert.equal(mockModal.openedSection, 'about');
 
-    // 5. Audio Toggle
+    // 6. Audio Toggle
     assert.equal(studio.isMuted, true);
     studio.toggleSound();
     assert.equal(studio.isMuted, false);
@@ -89,9 +92,9 @@ describe('Living Video Diorama & Phase Control Tests', () => {
     assert.equal(mockVideo.muted, true);
   });
 
-  it('should loop coding phase seamlessly at 2.4s boundary without drinking coffee', () => {
+  it('should loop coding phase seamlessly at 3.95s boundary without drinking coffee', () => {
     const mockVideo = {
-      currentTime: 2.42,
+      currentTime: 3.98,
       play: async () => {},
     };
     const studio = new LivingVideoStudio(null);

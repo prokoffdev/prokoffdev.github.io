@@ -1,10 +1,11 @@
 import { ContentPanel } from '../ui/ContentPanel.js';
 
 export const VideoPhase = Object.freeze({
-  CODING: 'CODING',       // 0.0s - 2.4s (ambient coding loop: pure typing, no coffee)
-  COFFEE: 'COFFEE',       // 2.65s - 3.6s (coffee sip action only on demand)
-  BUILD: 'BUILD',         // 3.85s - 5.8s (compile & green terminal screen)
-  RELAX: 'RELAX',         // 5.85s - 7.4s (success stretch & hands behind head)
+  CODING: 'CODING',       // 0.0s - 4.0s (ambient coding loop: pure typing, locked tripod camera)
+  CAT_REACT: 'CAT_REACT', // 4.0s - 7.5s (cat wake & pet: stretches, glowing LED eyes, wags tail)
+  COFFEE: 'COFFEE',       // 7.5s - 12.0s (Oleg lifts mug from desk, drinks, puts back down)
+  BUILD: 'BUILD',         // compile & projects
+  RELAX: 'RELAX',         // success & developer profile
 });
 
 export class LivingVideoStudio {
@@ -230,32 +231,24 @@ export class LivingVideoStudio {
 
     switch (this.phase) {
       case VideoPhase.CODING:
-        // Seamless loop between 0.05s and 2.4s (Pure typing - Oleg NEVER drinks coffee in idle)
-        if (t >= 2.4) {
+        // Seamless loop between 0.05s and 3.95s (Pure typing - locked tripod, zero drift)
+        if (t >= 3.95) {
           this.videoEl.currentTime = 0.05;
         }
         break;
 
-      case VideoPhase.COFFEE:
-        // Oleg drinks coffee from 2.65s to 3.6s, then returns to coding loop
-        if (t >= 3.6) {
+      case VideoPhase.CAT_REACT:
+        // Cat wakes up, stretches, opens cyan LED eyes, wags tail, curls back to sleep
+        if (t >= 7.45) {
           this.playCodingLoop();
+          this.contentPanel.open('assistant-help');
         }
         break;
 
-      case VideoPhase.BUILD:
-        // Code compiles from 3.85s to 5.8s (green terminal screen)
-        if (t >= 5.8) {
-          this.contentPanel.open('projects');
-          this.videoEl.pause();
-        }
-        break;
-
-      case VideoPhase.RELAX:
-        // Oleg relaxes with hands behind head from 5.85s to 7.35s
-        if (t >= 7.35) {
-          this.videoEl.pause();
-          this.contentPanel.open('about');
+      case VideoPhase.COFFEE:
+        // Oleg drinks coffee from 7.5s to 12.0s, puts mug back on desk, returns to typing
+        if (t >= 11.95) {
+          this.playCodingLoop();
         }
         break;
     }
@@ -270,31 +263,30 @@ export class LivingVideoStudio {
 
   triggerCoffee() {
     this.phase = VideoPhase.COFFEE;
-    this.showToast('☕ Кофе заварен: Олег делает глоток и анализирует архитектуру');
+    this.showToast('☕ Кофе заварен: Олег берет кружку со стола, делает глоток и возвращается к коду');
     if (!this.videoEl) return;
-    this.videoEl.currentTime = 2.65;
+    this.videoEl.currentTime = 7.52;
     this.videoEl.play().catch(() => {});
   }
 
   triggerBuild() {
     this.phase = VideoPhase.BUILD;
     this.showToast('🚀 Запуск компиляции: Тесты 100% PASS, билд успешен!');
-    if (!this.videoEl) return;
-    this.videoEl.currentTime = 3.85;
-    this.videoEl.play().catch(() => {});
+    this.contentPanel.open('projects');
   }
 
   triggerRelax() {
     this.phase = VideoPhase.RELAX;
     this.showToast('🧘 Все задачи закрыты! Олег отдыхает и готов к новым вызовам');
-    if (!this.videoEl) return;
-    this.videoEl.currentTime = 5.85;
-    this.videoEl.play().catch(() => {});
+    this.contentPanel.open('about');
   }
 
   triggerCat() {
-    this.showToast('🐱 Мурр! Робо-кот довольно мурлычет и активирует ассистента');
-    this.contentPanel.open('assistant-help');
+    this.phase = VideoPhase.CAT_REACT;
+    this.showToast('🐱 Мурр! Робо-кот потягивается, открывает глаза и мурлычет');
+    if (!this.videoEl) return;
+    this.videoEl.currentTime = 4.02;
+    this.videoEl.play().catch(() => {});
   }
 
   toggleSound() {

@@ -293,11 +293,15 @@ export class LivingVideoStudio {
     if (!this.videoEl) return;
     this.isMuted = !this.isMuted;
     this.videoEl.muted = this.isMuted;
+    if (!this.isMuted) {
+      this.videoEl.volume = 1.0;
+      this.videoEl.play().catch(() => {});
+    }
     if (this.soundBtn) {
       this.soundBtn.innerHTML = this.isMuted ? '🔇' : '🔊';
       this.soundBtn.setAttribute('title', this.isMuted ? 'Включить звук студии' : 'Выключить звук студии');
     }
-    this.showToast(this.isMuted ? '🔇 Звук студии выключен' : '🔊 Звук студии включен (эмбиент клавиш и дождя)');
+    this.showToast(this.isMuted ? '🔇 Звук студии выключен' : '🔊 Звук студии включен (эмбиент клавиш и студии)');
   }
 
   showToast(message) {

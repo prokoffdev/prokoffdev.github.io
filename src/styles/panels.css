@@ -226,6 +226,58 @@
   color: #55c9f2;
 }
 
+/* Profile Tab Switcher (Обо мне + Стек) */
+.studio-profile-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  background: rgba(22, 30, 42, 0.7);
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid rgba(100, 115, 134, 0.25);
+}
+
+.studio-profile-tab {
+  flex: 1;
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.studio-profile-tab:hover {
+  color: #fff;
+  background: rgba(255, 69, 77, 0.12);
+}
+
+.studio-profile-tab.is-active {
+  background: #ff454d;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(255, 69, 77, 0.35);
+}
+
+.studio-tab-pane {
+  display: none;
+  animation: studioFadeIn 0.2s ease;
+}
+
+.studio-tab-pane.is-active {
+  display: block;
+}
+
+@keyframes studioFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* Bottom Sheet on Mobile */
 @media (max-width: 768px) {
   .studio-modal-backdrop {

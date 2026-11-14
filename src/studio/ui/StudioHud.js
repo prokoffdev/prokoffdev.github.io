@@ -32,15 +32,21 @@ export class StudioHud {
       <div class="studio-hud-header">
         <div class="studio-hud-brand">
           <span class="studio-hud-logo">prokoff<span>dev</span></span>
-          <span class="studio-hud-tagline">Интерактивная студия</span>
+          <span class="studio-hud-tagline">Живая интерактивная диорама</span>
         </div>
 
-        <div class="studio-mode-switcher" role="tablist" aria-label="Режимы взаимодействия">
-          <button type="button" class="studio-mode-btn is-active" data-mode="${InteractionMode.QUICK_VIEW}">
-            <span>⚡ Быстрый просмотр</span>
+        <div class="studio-hud-nav" role="navigation" aria-label="Быстрый переход">
+          <button type="button" class="studio-hud-pill" data-nav-action="projects">
+            <span>💻 Проекты</span>
           </button>
-          <button type="button" class="studio-mode-btn" data-mode="${InteractionMode.EXPLORE}">
-            <span>🕹️ Исследовать</span>
+          <button type="button" class="studio-hud-pill" data-nav-action="about">
+            <span>👤 Обо мне & Стек</span>
+          </button>
+          <button type="button" class="studio-hud-pill" data-nav-action="assistant-help">
+            <span>🐱 Робо-кот</span>
+          </button>
+          <button type="button" class="studio-hud-pill" data-nav-action="contact">
+            <span>✉️ Связь</span>
           </button>
         </div>
       </div>
@@ -65,13 +71,13 @@ export class StudioHud {
             <button type="button" class="studio-card-close" id="studio-card-close-btn" aria-label="Скрыть карточку" title="Скрыть карточку">✕</button>
           </div>
           <p class="studio-card-msg">
-            Привет! Я Олег. Разрабатываю масштабируемые веб-сервисы, архитектуру баз данных и интерактивные системы. Кликните по предметам в комнате или переключитесь в режим «Исследовать»!
+            Привет! Я Олег. Разрабатываю масштабируемые веб-сервисы, архитектуру баз данных и интерактивные системы. Нажимайте на мониторы, рабочее место или спящего робо-кота!
           </p>
           <div class="studio-card-chips">
-            <button type="button" class="studio-card-chip" data-chip-action="explore">🕹️ Исследовать</button>
             <button type="button" class="studio-card-chip" data-chip-action="projects">💻 Проекты</button>
-            <button type="button" class="studio-card-chip" data-chip-action="cat">🐱 Робо-кот</button>
-            <a href="#about" class="studio-card-chip" data-chip-action="resume">📄 Резюме</a>
+            <button type="button" class="studio-card-chip" data-chip-action="resume">👤 Обо мне & Стек</button>
+            <button type="button" class="studio-card-chip" data-chip-action="cat">🐱 Спросить робо-кота</button>
+            <button type="button" class="studio-card-chip" data-chip-action="contact">✉️ Контакты</button>
           </div>
         </div>
       </div>
@@ -79,22 +85,13 @@ export class StudioHud {
       <!-- Minimized Character Avatar Trigger -->
       <button type="button" class="studio-avatar-minipill" id="studio-avatar-minipill" style="display: none;" title="Показать приветствие Олега">
         <img src="/assets/sprites/oleg_face_badge.png" alt="Олег" />
-        <span>Привет от Олега</span>
+        <span>Олег Прокофьев</span>
       </button>
 
       <!-- Bottom Controls Hint -->
       <div class="studio-controls-hint">
         <div class="studio-hint-quick">
-          <span>💡 Клик по объекту открывает резюме без ожидания персонажа</span>
-        </div>
-        <div class="studio-hint-explore" style="display: none;">
-          <span class="studio-key-badge">W</span>
-          <span class="studio-key-badge">A</span>
-          <span class="studio-key-badge">S</span>
-          <span class="studio-key-badge">D</span>
-          <span>Движение</span>
-          <span class="studio-key-badge" style="margin-left: 8px;">E</span>
-          <span>Взаимодействие</span>
+          <span>💡 Наведите на любой предмет студии или кликните, чтобы открыть подробности</span>
         </div>
       </div>
     `;
@@ -106,7 +103,18 @@ export class StudioHud {
   setupListeners() {
     if (!this.hudEl) return;
 
-    // Mode buttons
+    // Quick nav pills
+    const navPills = this.hudEl.querySelectorAll('[data-nav-action]');
+    navPills.forEach((pill) => {
+      pill.addEventListener('click', () => {
+        const action = pill.getAttribute('data-nav-action');
+        if (this.callbacks.onOpenPanel) {
+          this.callbacks.onOpenPanel(action);
+        }
+      });
+    });
+
+    // Mode buttons (compatibility fallback)
     const buttons = this.hudEl.querySelectorAll('.studio-mode-btn');
     buttons.forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -158,6 +166,10 @@ export class StudioHud {
         } else if (action === 'resume') {
           if (this.callbacks.onOpenPanel) {
             this.callbacks.onOpenPanel('about');
+          }
+        } else if (action === 'contact') {
+          if (this.callbacks.onOpenPanel) {
+            this.callbacks.onOpenPanel('contact');
           }
         }
       });

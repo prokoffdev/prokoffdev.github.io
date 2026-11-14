@@ -145,7 +145,7 @@ export class StudioScene extends Phaser.Scene {
         }
         if (action === 'purr') {
           this.roboCat?.react();
-          this.spawnFloatingHearts(1060, 770);
+          this.spawnFloatingHearts(172, 448);
         }
       },
     });
@@ -159,7 +159,7 @@ export class StudioScene extends Phaser.Scene {
         this.triggerClickRipple(hotspot);
         if (hotspot.id === 'OBJ_ROBOCAT') {
           this.roboCat?.react();
-          this.spawnFloatingHearts(1060, 770);
+          this.spawnFloatingHearts(172, 448);
         }
         if (hotspot.id === 'OBJ_AVATAR') {
           this.avatar?.greet();
@@ -171,9 +171,23 @@ export class StudioScene extends Phaser.Scene {
         });
       },
       onHover: (hotspot) => {
+        const prev = this.currentHoveredHotspot;
         this.currentHoveredHotspot = hotspot;
         if (!hotspot && this.hoverHighlight) {
           this.hoverHighlight.clear();
+        }
+
+        // Cat hover reactions
+        if (hotspot?.id === 'OBJ_ROBOCAT') {
+          this.isCatSleeping = false;
+          if (this.catWakeTimer) {
+            this.catWakeTimer.remove();
+            this.catWakeTimer = null;
+          }
+        } else if (prev?.id === 'OBJ_ROBOCAT' && !hotspot) {
+          this.catWakeTimer = this.time.delayedCall(3000, () => {
+            this.isCatSleeping = true;
+          });
         }
       },
     });
@@ -193,33 +207,10 @@ export class StudioScene extends Phaser.Scene {
     this.studioHud = new StudioHud(mountContainer, {
       onModeChange: (newMode) => {
         this.interactionRouter.setMode(newMode);
-        if (newMode === InteractionMode.EXPLORE) {
-          if (this.roomBg) {
-            this.avatar.container?.setVisible(true);
-            this.roboCat.container?.setVisible(true);
-            if (this.avatar.currentCol === 14 && this.avatar.currentRow === 6) {
-              this.avatar.currentCol = 12;
-              this.avatar.currentRow = 7;
-              this.avatar.updatePosition();
-            }
-            if (this.roboCat.currentCol === 18 && this.roboCat.currentRow === 9) {
-              this.roboCat.currentCol = 12;
-              this.roboCat.currentRow = 8;
-              this.roboCat.updatePosition();
-            }
-          }
-          if (this.avatar.fsm.is('typing') || this.avatar.fsm.is('thinking')) {
-            this.avatar.fsm.dispatch('USER_START_MOVE');
-            this.avatar.fsm.forceState('idle');
-          }
-        } else {
-          this.avatar?.stop();
-          this.roboCat?.stop();
-          this.cameraDirector?.setOverview();
-          if (this.roomBg) {
-            this.avatar.container?.setVisible(false);
-            this.roboCat.container?.setVisible(false);
-          }
+        // Living Diorama keeps duplicate sprites hidden
+        if (this.roomBg) {
+          this.avatar?.container?.setVisible(false);
+          this.roboCat?.container?.setVisible(false);
         }
       },
       onOpenPanel: (contentKey) => {
@@ -231,6 +222,7 @@ export class StudioScene extends Phaser.Scene {
     this.createFloorAndWalls();
     this.createFurniture();
     this.createAmbientVfx();
+    this.createLivingDioramaVfx();
     this.createDebugLayers();
     this.setupInteractionAndControls();
     this.setupVisibilityListeners();
@@ -238,28 +230,13 @@ export class StudioScene extends Phaser.Scene {
     // Set initial overview camera
     this.cameraDirector.setOverview(true);
 
-    // Deep link query parameters (?modal=... & ?mode=...)
+    // Deep link query parameters (?modal=...)
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const targetModal = params.get('modal');
       if (targetModal) {
         this.time.delayedCall(450, () => {
           this.contentPanel?.open(targetModal);
-        });
-      }
-      const initialMode = params.get('mode');
-      if (initialMode === 'explore') {
-        this.time.delayedCall(300, () => {
-          this.studioHud?.setMode(InteractionMode.EXPLORE);
-          this.interactionRouter?.setMode(InteractionMode.EXPLORE);
-          if (this.roomBg) {
-            this.avatar.container?.setVisible(true);
-            this.roboCat.container?.setVisible(true);
-            this.avatar.currentCol = 12;
-            this.avatar.currentRow = 7;
-            this.avatar.updatePosition();
-          }
-          this.avatar.moveTo(8, 7);
         });
       }
     }
@@ -753,12 +730,9 @@ export class StudioScene extends Phaser.Scene {
       const hit = this.hotspotManager?.handlePointerDown(worldPoint.x, worldPoint.y);
       if (hit) return;
 
-      // In Explore Mode: click on floor walks avatar
-      if (this.interactionRouter?.getMode() === InteractionMode.EXPLORE && this.avatar) {
-        const clickedCell = this.isoGrid.screenToCell(worldPoint.x, worldPoint.y);
-        if (this.isoGrid.isValidCell(clickedCell.col, clickedCell.row)) {
-          this.avatar.moveTo(clickedCell.col, clickedCell.row);
-        }
+      // Click outside hotspots resets overview camera if zoomed
+      if (this.cameraDirector) {
+        this.cameraDirector.setOverview();
       }
     });
 
@@ -834,19 +808,19 @@ export class StudioScene extends Phaser.Scene {
     const monitorPulse = Math.sin(effTime * 0.003) * 0.04 + 0.14;
     g.fillStyle(0x00f0ff, monitorPulse);
     g.fillPoints([
-      { x: 1000, y: 390 },
-      { x: 1190, y: 470 },
-      { x: 1130, y: 550 },
-      { x: 920, y: 450 },
+      { x: 860, y: 440 },
+      { x: 1160, y: 490 },
+      { x: 1110, y: 550 },
+      { x: 820, y: 510 },
     ], true);
 
     // Warm monitor screen highlight
     g.fillStyle(0x38bdf8, monitorPulse * 0.6);
     g.fillPoints([
-      { x: 1040, y: 410 },
-      { x: 1160, y: 465 },
-      { x: 1100, y: 520 },
-      { x: 970, y: 460 },
+      { x: 890, y: 450 },
+      { x: 1140, y: 490 },
+      { x: 1090, y: 535 },
+      { x: 850, y: 505 },
     ], true);
 
     // 2. Bedside Lamp Glow (warm amber/orange)
@@ -859,7 +833,7 @@ export class StudioScene extends Phaser.Scene {
     // 3. Cat Cushion Charging Station Aura (soft cyan)
     const catPulse = Math.sin(effTime * 0.004) * 0.03 + 0.12;
     g.fillStyle(0x00ffff, catPulse);
-    g.fillEllipse(900, 810, 64, 30);
+    g.fillEllipse(172, 452, 68, 32);
   }
 
   renderHoverHighlight(time) {
@@ -963,11 +937,231 @@ export class StudioScene extends Phaser.Scene {
     }
   }
 
+  createLivingDioramaVfx() {
+    this.isCatSleeping = true;
+    this.catWakeTimer = null;
+
+    // 1. Live Code Monitor (Left Screen: x ~ 888, y ~ 330, tilt ~ 13.6 deg)
+    this.codeScreenContainer = this.add.container(888, 332);
+    this.codeScreenContainer.setDepth(1830);
+    this.codeScreenContainer.setRotation(0.237); // ~13.6 deg isometric tilt
+
+    // Clip mask for monitor screen parallelogram
+    try {
+      const maskShape = this.make.graphics();
+      maskShape.fillStyle(0xffffff);
+      maskShape.beginPath();
+      maskShape.moveTo(883, 319);
+      maskShape.lineTo(1015, 349);
+      maskShape.lineTo(1015, 452);
+      maskShape.lineTo(883, 422);
+      maskShape.closePath();
+      maskShape.fillPath();
+      const monitorMask = maskShape.createGeometryMask();
+      this.codeScreenContainer.setMask(monitorMask);
+    } catch {
+      // Fallback if geometry mask unavailable
+    }
+
+    // Code Lines Repository
+    this.codeSnippets = [
+      { text: "import { Engine } from 'studio';", color: '#38bdf8' },
+      { text: "const oleg = new Developer({", color: '#c084fc' },
+      { text: "  name: 'Oleg Prokofev',", color: '#4ade80' },
+      { text: "  stack: ['React', 'TS', 'UE5'],", color: '#facc15' },
+      { text: "  focus: 'High-Scale Systems',", color: '#4ade80' },
+      { text: "  status: 'Living Diorama 60FPS',", color: '#38bdf8' },
+      { text: "});", color: '#c084fc' },
+      { text: "async function compile() {", color: '#facc15' },
+      { text: "  await oleg.buildProjects();", color: '#38bdf8' },
+      { text: "  return oleg.isReadyForHire;", color: '#4ade80' },
+      { text: "}", color: '#facc15' },
+      { text: "console.log('Studio Online!');", color: '#38bdf8' },
+      { text: "export default oleg.start();", color: '#c084fc' },
+    ];
+    this.codeSnippetIndex = 0;
+    this.codeLineObjects = [];
+
+    // Initialize 6 visible code lines
+    for (let i = 0; i < 7; i++) {
+      const item = this.codeSnippets[i % this.codeSnippets.length];
+      const lineText = this.add.text(0, i * 11.5, item.text, {
+        fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+        fontSize: '8.5px',
+        color: item.color,
+      });
+      this.codeLineObjects.push(lineText);
+      this.codeScreenContainer.add(lineText);
+    }
+    this.codeSnippetIndex = 7;
+
+    // Blinking Cursor
+    this.codeCursor = this.add.text(0, 72, '▎', {
+      fontFamily: 'monospace',
+      fontSize: '8.5px',
+      color: '#00f0ff',
+    });
+    this.codeScreenContainer.add(this.codeCursor);
+
+    // Typing & Scrolling Timer
+    this.codeScrollTimer = this.time.addEvent({
+      delay: 1800,
+      callback: () => this.scrollCodeScreen(),
+      loop: true,
+    });
+
+    // 2. Right Monitor Equalizer & Sci-Fi Dashboard
+    this.synthwaveGraphics = this.add.graphics();
+    this.synthwaveGraphics.setDepth(1830);
+
+    // 3. PC Tower Red LED Fan Pulse
+    this.pcFansGraphics = this.add.graphics();
+    this.pcFansGraphics.setDepth(1830);
+
+    // 4. Coffee Steam Emitter
+    this.coffeeSteamTimer = this.time.addEvent({
+      delay: 700,
+      callback: () => this.spawnCoffeeSteam(),
+      loop: true,
+    });
+
+    // 5. Robo-Cat Sleeping Zzz Emitter
+    this.catSleepTimer = this.time.addEvent({
+      delay: 1200,
+      callback: () => this.spawnCatSleepZzz(),
+      loop: true,
+    });
+  }
+
+  scrollCodeScreen() {
+    if (!this.codeLineObjects || this.codeLineObjects.length === 0) return;
+
+    const nextSnippet = this.codeSnippets[this.codeSnippetIndex % this.codeSnippets.length];
+    this.codeSnippetIndex++;
+
+    // Shift line texts up
+    for (let i = 0; i < this.codeLineObjects.length - 1; i++) {
+      this.codeLineObjects[i].setText(this.codeLineObjects[i + 1].text);
+      this.codeLineObjects[i].setColor(this.codeLineObjects[i + 1].style.color);
+    }
+
+    // Set newest line at bottom
+    const lastLine = this.codeLineObjects[this.codeLineObjects.length - 1];
+    lastLine.setText(nextSnippet.text);
+    lastLine.setColor(nextSnippet.color);
+
+    // Update cursor position to end of bottom line
+    const textWidth = lastLine.width;
+    this.codeCursor.setPosition(textWidth + 2, (this.codeLineObjects.length - 1) * 11.5);
+  }
+
+  spawnCatSleepZzz() {
+    if (!this.isCatSleeping || !this.add) return;
+    const glyphs = ['z', 'Z', 'zzz'];
+    const glyph = glyphs[Phaser.Math.Between(0, glyphs.length - 1)];
+
+    const startX = 172 + Phaser.Math.Between(-8, 8);
+    const startY = 418;
+
+    const zText = this.add.text(startX, startY, glyph, {
+      fontFamily: "'Bricolage Grotesque', system-ui, sans-serif",
+      fontSize: '13px',
+      fontWeight: '700',
+      color: '#38bdf8',
+    });
+    zText.setOrigin(0.5);
+    zText.setDepth(1850);
+    zText.setAlpha(0.85);
+
+    this.tweens.add({
+      targets: zText,
+      y: startY - 70 - Phaser.Math.Between(0, 20),
+      x: startX + Phaser.Math.Between(-16, 16),
+      alpha: 0,
+      scaleX: 1.5,
+      scaleY: 1.5,
+      duration: 2200,
+      ease: 'Sine.easeOut',
+      onComplete: () => {
+        zText.destroy();
+      },
+    });
+  }
+
+  spawnCoffeeSteam() {
+    if (!this.add) return;
+    const startX = 914 + Phaser.Math.Between(-2, 2);
+    const startY = 500;
+
+    const steam = this.add.graphics();
+    steam.setDepth(1840);
+    steam.fillStyle(0xffffff, 0.22);
+    steam.fillCircle(0, 0, Phaser.Math.Between(2, 4));
+    steam.setPosition(startX, startY);
+
+    this.tweens.add({
+      targets: steam,
+      y: startY - 32 - Phaser.Math.Between(0, 15),
+      x: startX + Phaser.Math.Between(-8, 8),
+      alpha: 0,
+      scaleX: 2.2,
+      scaleY: 2.2,
+      duration: 1600,
+      ease: 'Sine.easeOut',
+      onComplete: () => {
+        steam.destroy();
+      },
+    });
+  }
+
+  updateLivingDioramaVfx(time, delta) {
+    const effTime = time;
+
+    // 1. Cursor blink on code monitor
+    if (this.codeCursor) {
+      this.codeCursor.setAlpha(Math.sin(effTime * 0.008) > 0 ? 1 : 0);
+    }
+
+    // 2. Right Monitor Sci-Fi Equalizer Waveform
+    if (this.synthwaveGraphics) {
+      const g = this.synthwaveGraphics;
+      g.clear();
+
+      // Equalizer bars along horizon (x: 1040..1150, y ~ 410..425)
+      const barCount = 12;
+      for (let i = 0; i < barCount; i++) {
+        const bx = 1045 + i * 9;
+        const by = 412 + (bx - 1045) * 0.21;
+        const h = Math.abs(Math.sin(effTime * 0.005 + i * 0.6)) * 14 + 3;
+        const color = i % 2 === 0 ? 0x00f0ff : 0xec4899;
+        g.fillStyle(color, 0.75);
+        g.fillRect(bx, by - h, 4, h);
+      }
+    }
+
+    // 3. PC Tower Red LED Fans Glow
+    if (this.pcFansGraphics) {
+      const g = this.pcFansGraphics;
+      g.clear();
+      const pulse = Math.sin(effTime * 0.005) * 0.25 + 0.75;
+      g.lineStyle(2, 0xff2d37, 0.8 * pulse);
+      // Fan 1
+      g.strokeCircle(750, 355, 12);
+      g.fillStyle(0xff454d, 0.2 * pulse);
+      g.fillCircle(750, 355, 12);
+      // Fan 2
+      g.strokeCircle(750, 402, 12);
+      g.fillStyle(0xff454d, 0.2 * pulse);
+      g.fillCircle(750, 402, 12);
+    }
+  }
+
   update(time, delta) {
     this.avatar?.update(time, delta);
     this.roboCat?.update(time, delta);
     this.cameraDirector?.update(time, delta);
     this.renderAmbientVfx(time);
+    this.updateLivingDioramaVfx(time, delta);
     this.renderHoverHighlight(time);
   }
 }

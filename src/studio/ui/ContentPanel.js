@@ -204,21 +204,54 @@ export class ContentPanel {
       case 'about':
         return {
           icon: '👤',
-          title: 'Обо мне — Олег Прокофьев',
+          title: 'Олег Прокофьев — Обо мне и Стек',
           render: () => `
-            <div class="studio-panel-avatar-badge" style="display: flex; align-items: center; gap: 14px; margin-bottom: 16px; padding: 12px; background: rgba(36, 48, 62, 0.4); border-radius: 12px; border: 1px solid rgba(100, 115, 134, 0.3);">
+            <div class="studio-panel-avatar-badge" style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px; padding: 12px; background: rgba(36, 48, 62, 0.4); border-radius: 12px; border: 1px solid rgba(100, 115, 134, 0.3);">
               <img src="/assets/sprites/oleg_face_badge.png" style="width: 52px; height: 52px; border-radius: 12px; object-fit: cover; object-position: top center; border: 2px solid #ff454d;" alt="Олег Прокофьев" />
               <div>
                 <h4 style="margin: 0; color: #fff; font-size: 15px;">Олег Прокофьев</h4>
                 <p style="margin: 3px 0 0 0; color: #ff454d; font-size: 11.5px; font-weight: 600;">Full-Stack & Systems Engineer</p>
               </div>
             </div>
-            ${profileData.about.paragraphs.map((p) => `<p>${p}</p>`).join('')}
-            <div class="studio-panel-card">
-              <h4>Ключевые факты</h4>
-              <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #cbd5e1;">
-                ${profileData.about.facts.map((f) => `<li>${f}</li>`).join('')}
-              </ul>
+
+            <!-- Tab switcher -->
+            <div class="studio-profile-tabs" role="tablist">
+              <button type="button" class="studio-profile-tab is-active" data-profile-tab="bio">👤 Обо мне</button>
+              <button type="button" class="studio-profile-tab" data-profile-tab="skills">📚 Стек и навыки</button>
+              <button type="button" class="studio-profile-tab" data-profile-tab="facts">⚡ Факты</button>
+            </div>
+
+            <!-- Tab 1: Bio -->
+            <div class="studio-tab-pane is-active" data-tab-content="bio">
+              ${profileData.about.paragraphs.map((p) => `<p>${p}</p>`).join('')}
+            </div>
+
+            <!-- Tab 2: Skills & Tech -->
+            <div class="studio-tab-pane" data-tab-content="skills">
+              <p style="font-size: 13px; color: #94a3b8; margin-bottom: 12px;">${skillsData.lede}</p>
+              ${skillsData.cards.map((c) => `
+                <div class="studio-panel-card">
+                  <h4>${c.num}. ${c.title}</h4>
+                  <p style="font-size: 12.5px; margin-bottom: 8px;">${c.note}</p>
+                  <div class="studio-tag-list">
+                    ${c.items.map((i) => `<span class="studio-tag">${i}</span>`).join('')}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+
+            <!-- Tab 3: Key Facts -->
+            <div class="studio-tab-pane" data-tab-content="facts">
+              <div class="studio-panel-card">
+                <h4>Ключевые факты</h4>
+                <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #cbd5e1; line-height: 1.6;">
+                  ${profileData.about.facts.map((f) => `<li>${f}</li>`).join('')}
+                </ul>
+              </div>
+              <div class="studio-panel-card" style="margin-top: 12px;">
+                <h4>Доступность</h4>
+                <p style="font-size: 13px; color: #cbd5e1;">${profileData.availability}</p>
+              </div>
             </div>
           `,
         };
@@ -305,6 +338,19 @@ export class ContentPanel {
     if (closeBtn) {
       closeBtn.addEventListener('click', () => this.close());
     }
+
+    // Hook profile tab switcher (Обо мне + Стек)
+    this.panelEl.querySelectorAll('[data-profile-tab]').forEach((tabBtn) => {
+      tabBtn.addEventListener('click', () => {
+        const targetTab = tabBtn.getAttribute('data-profile-tab');
+        this.panelEl.querySelectorAll('.studio-profile-tab').forEach((b) => b.classList.remove('is-active'));
+        this.panelEl.querySelectorAll('.studio-tab-pane').forEach((p) => p.classList.remove('is-active'));
+
+        tabBtn.classList.add('is-active');
+        const targetPane = this.panelEl.querySelector(`[data-tab-content="${targetTab}"]`);
+        if (targetPane) targetPane.classList.add('is-active');
+      });
+    });
 
     // Hook cat navigation pills
     this.panelEl.querySelectorAll('[data-cat-nav]').forEach((btn) => {

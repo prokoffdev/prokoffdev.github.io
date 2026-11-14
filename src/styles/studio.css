@@ -64,6 +64,43 @@
   padding-left: 10px;
 }
 
+/* Diorama Navigation Pills */
+.studio-hud-nav {
+  display: flex;
+  background: rgba(17, 25, 35, 0.9);
+  border: 1px solid rgba(100, 115, 134, 0.4);
+  border-radius: 999px;
+  padding: 4px;
+  gap: 4px;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  pointer-events: auto;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.studio-hud-pill {
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.studio-hud-pill:hover {
+  background: rgba(255, 69, 77, 0.15);
+  color: #ff454d;
+  box-shadow: 0 0 0 1px rgba(255, 69, 77, 0.4);
+  transform: translateY(-1px);
+}
+
 /* Mode Switcher Pill */
 .studio-mode-switcher {
   display: flex;

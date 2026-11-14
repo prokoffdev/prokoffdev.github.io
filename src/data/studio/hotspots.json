@@ -6,7 +6,7 @@
     {
       "id": "OBJ_MONITOR",
       "assetId": "PROP-001",
-      "label": "Проекты",
+      "label": "Проекты и кейсы",
       "contentKey": "projects",
       "anchorTile": [
         14,
@@ -20,20 +20,20 @@
         "type": "polygon",
         "points": [
           [
-            1000,
-            350
+            883,
+            319
           ],
           [
-            1190,
-            440
+            1164,
+            381
           ],
           [
-            1120,
-            510
+            1164,
+            484
           ],
           [
-            950,
-            420
+            883,
+            438
           ]
         ]
       },
@@ -61,10 +61,10 @@
       "shape": {
         "type": "circle",
         "center": [
-          1100,
-          690
+          960,
+          480
         ],
-        "radius": 48
+        "radius": 42
       },
       "states": [
         "default",
@@ -89,10 +89,10 @@
       "shape": {
         "type": "circle",
         "center": [
-          720,
-          610
+          523,
+          480
         ],
-        "radius": 42
+        "radius": 45
       },
       "states": [
         "default",
@@ -119,20 +119,20 @@
         "type": "polygon",
         "points": [
           [
-            280,
-            350
+            200,
+            200
           ],
           [
-            480,
-            250
+            380,
+            130
           ],
           [
-            520,
-            390
+            420,
+            260
           ],
           [
-            320,
-            490
+            240,
+            340
           ]
         ]
       },
@@ -162,20 +162,20 @@
         "type": "polygon",
         "points": [
           [
-            1160,
-            310
+            1180,
+            260
           ],
           [
-            1350,
-            405
+            1370,
+            340
           ],
           [
-            1290,
-            500
+            1330,
+            460
           ],
           [
-            1100,
-            405
+            1140,
+            380
           ]
         ]
       },
@@ -205,7 +205,7 @@
           1270,
           640
         ],
-        "radius": 44
+        "radius": 45
       },
       "states": [
         "default",
@@ -217,7 +217,7 @@
     {
       "id": "OBJ_AVATAR",
       "assetId": "CHR-001",
-      "label": "Обо мне",
+      "label": "Олег — Обо мне и Стек",
       "contentKey": "about",
       "anchorTile": [
         14,
@@ -230,10 +230,10 @@
       "shape": {
         "type": "circle",
         "center": [
-          910,
-          678
+          805,
+          503
         ],
-        "radius": 54
+        "radius": 80
       },
       "states": [
         "default",
@@ -258,10 +258,10 @@
       "shape": {
         "type": "circle",
         "center": [
-          1060,
-          785
+          172,
+          448
         ],
-        "radius": 48
+        "radius": 65
       },
       "states": [
         "default",

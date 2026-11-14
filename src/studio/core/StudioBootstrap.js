@@ -13,15 +13,23 @@ export const StudioStatus = Object.freeze({
   DESTROYED: 'DESTROYED',
 });
 
+export const StudioDisplayMode = Object.freeze({
+  VIDEO: 'video',
+  CANVAS: 'canvas',
+});
+
 export class StudioBootstrap {
   /**
    * @param {object} [options]
    * @param {boolean} [options.enabled] - Explicit enable flag (defaults to feature flag check)
+   * @param {string} [options.mode] - 'video' or 'canvas'
    */
   constructor(options = {}) {
     this.status = StudioStatus.UNMOUNTED;
     this.container = null;
     this.game = null;
+    this.videoStudio = null;
+    this.currentMode = StudioDisplayMode.VIDEO;
     this.options = options;
     this.data = {
       layout: sceneLayoutData,
@@ -48,6 +56,24 @@ export class StudioBootstrap {
       }
     }
     return false;
+  }
+
+  getInitialMode() {
+    if (this.options.mode) {
+      return this.options.mode;
+    }
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const modeParam = urlParams.get('mode');
+      if (modeParam === 'canvas' || modeParam === 'video') {
+        return modeParam;
+      }
+      const stored = localStorage.getItem('prokoff_studio_mode');
+      if (stored === 'canvas' || stored === 'video') {
+        return stored;
+      }
+    }
+    return StudioDisplayMode.VIDEO;
   }
 
   mount(target) {
@@ -116,58 +142,148 @@ export class StudioBootstrap {
     // Validated successfully
     this.container.style.display = 'block';
 
-    // Launch Phaser in container if browser environment
     if (typeof window !== 'undefined' && typeof document !== 'undefined') {
-      this.container.style.width = '100%';
-      this.container.style.maxWidth = '1600px';
-      this.container.style.margin = '80px auto 40px auto';
-      this.container.style.position = 'relative';
-
-      try {
-        const phaserModule = await import('phaser');
-        const Phaser = phaserModule.default || phaserModule;
-        const { StudioScene } = await import('../scenes/StudioScene.js');
-
-        // Create Phaser Game configuration
-        const gameConfig = {
-          type: Phaser.AUTO,
-          parent: this.container,
-          width: 1600,
-          height: 1000,
-          backgroundColor: '#111923',
-          input: {
-            touch: {
-              capture: false,
-            },
-          },
-          scale: {
-            mode: Phaser.Scale.FIT,
-            autoCenter: Phaser.Scale.CENTER_BOTH,
-            width: 1600,
-            height: 1000,
-          },
-          scene: [StudioScene],
-        };
-
-        this.game = new Phaser.Game(gameConfig);
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const isDebug = urlParams.get('debug') === '1' || urlParams.get('debug') === 'true';
-        if (isDebug) {
-          this.createDebugToolbar();
-        }
-      } catch (err) {
-        console.error('[StudioBootstrap] Failed to launch Phaser game:', err);
-        this.status = StudioStatus.ERROR;
-        this.error = err;
-        this.container.style.display = 'none';
-        return false;
+      this.currentMode = this.getInitialMode();
+      if (this.currentMode === StudioDisplayMode.CANVAS) {
+        return await this.launchCanvasStudio();
+      } else {
+        return await this.launchVideoStudio();
       }
     }
 
     this.status = StudioStatus.INITIALIZED;
     this.container.setAttribute('data-studio-status', 'ready');
     return true;
+  }
+
+  async launchVideoStudio() {
+    this.cleanupCurrentRuntime();
+
+    this.container.style.width = '100%';
+    this.container.style.maxWidth = '1400px';
+    this.container.style.margin = '40px auto';
+    this.container.style.position = 'relative';
+
+    try {
+      const { LivingVideoStudio } = await import('../video/LivingVideoStudio.js');
+      this.videoStudio = new LivingVideoStudio(this.container, {
+        onSwitchMode: () => this.switchMode(StudioDisplayMode.CANVAS),
+      });
+
+      this.currentMode = StudioDisplayMode.VIDEO;
+      this.status = StudioStatus.INITIALIZED;
+      this.container.setAttribute('data-studio-status', 'ready');
+      this.container.setAttribute('data-studio-mode', 'video');
+      return true;
+    } catch (err) {
+      console.error('[StudioBootstrap] Failed to launch Living Video Studio:', err);
+      // Fallback to Canvas mode
+      return await this.launchCanvasStudio();
+    }
+  }
+
+  async launchCanvasStudio() {
+    this.cleanupCurrentRuntime();
+
+    this.container.style.width = '100%';
+    this.container.style.maxWidth = '1600px';
+    this.container.style.margin = '80px auto 40px auto';
+    this.container.style.position = 'relative';
+
+    try {
+      const phaserModule = await import('phaser');
+      const Phaser = phaserModule.default || phaserModule;
+      const { StudioScene } = await import('../scenes/StudioScene.js');
+
+      const gameConfig = {
+        type: Phaser.AUTO,
+        parent: this.container,
+        width: 1600,
+        height: 1000,
+        backgroundColor: '#111923',
+        input: {
+          touch: {
+            capture: false,
+          },
+        },
+        scale: {
+          mode: Phaser.Scale.FIT,
+          autoCenter: Phaser.Scale.CENTER_BOTH,
+          width: 1600,
+          height: 1000,
+        },
+        scene: [StudioScene],
+      };
+
+      this.game = new Phaser.Game(gameConfig);
+
+      // Add switch button to video mode in canvas HUD
+      this.setupCanvasHudSwitcher();
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const isDebug = urlParams.get('debug') === '1' || urlParams.get('debug') === 'true';
+      if (isDebug) {
+        this.createDebugToolbar();
+      }
+
+      this.currentMode = StudioDisplayMode.CANVAS;
+      this.status = StudioStatus.INITIALIZED;
+      this.container.setAttribute('data-studio-status', 'ready');
+      this.container.setAttribute('data-studio-mode', 'canvas');
+      return true;
+    } catch (err) {
+      console.error('[StudioBootstrap] Failed to launch Phaser game:', err);
+      this.status = StudioStatus.ERROR;
+      this.error = err;
+      this.container.style.display = 'none';
+      return false;
+    }
+  }
+
+  setupCanvasHudSwitcher() {
+    if (!this.container || typeof document === 'undefined') return;
+
+    // Check periodically until HUD is mounted by StudioScene
+    const interval = setInterval(() => {
+      const hudNav = this.container.querySelector('.studio-hud-nav');
+      if (hudNav && !hudNav.querySelector('.studio-hud-switch-video')) {
+        const switchBtn = document.createElement('button');
+        switchBtn.type = 'button';
+        switchBtn.className = 'studio-hud-pill studio-hud-switch-video';
+        switchBtn.innerHTML = '<span>🎬 Живая диорама</span>';
+        switchBtn.title = 'Переключить в режим кинематографического видео';
+        switchBtn.onclick = () => this.switchMode(StudioDisplayMode.VIDEO);
+        hudNav.appendChild(switchBtn);
+        clearInterval(interval);
+      }
+    }, 200);
+
+    setTimeout(() => clearInterval(interval), 5000);
+  }
+
+  async switchMode(newMode) {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('prokoff_studio_mode', newMode);
+    }
+    if (newMode === StudioDisplayMode.VIDEO) {
+      await this.launchVideoStudio();
+    } else {
+      await this.launchCanvasStudio();
+    }
+  }
+
+  cleanupCurrentRuntime() {
+    if (this.videoStudio) {
+      this.videoStudio.destroy();
+      this.videoStudio = null;
+    }
+    if (this.game) {
+      this.game.destroy(true);
+      this.game = null;
+    }
+    if (this.container) {
+      this.container.innerHTML = '';
+    }
   }
 
   createDebugToolbar() {
@@ -235,13 +351,10 @@ export class StudioBootstrap {
   }
 
   destroy() {
-    if (this.game) {
-      this.game.destroy(true);
-      this.game = null;
-    }
+    this.cleanupCurrentRuntime();
     if (this.container) {
-      this.container.innerHTML = '';
       this.container.removeAttribute('data-studio-status');
+      this.container.removeAttribute('data-studio-mode');
       this.container.style.display = 'none';
     }
     this.status = StudioStatus.DESTROYED;
@@ -251,5 +364,9 @@ export class StudioBootstrap {
 
   getStatus() {
     return this.status;
+  }
+
+  getMode() {
+    return this.currentMode;
   }
 }

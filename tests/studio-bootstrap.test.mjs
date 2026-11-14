@@ -44,6 +44,7 @@ describe('StudioBootstrap Lifecycle & Feature Flag Tests', () => {
     };
 
     const bootstrap = new StudioBootstrap({ enabled: true });
+    assert.equal(bootstrap.getMode(), 'video');
     bootstrap.mount(mockContainer);
     assert.equal(bootstrap.getStatus(), StudioStatus.MOUNTED);
 

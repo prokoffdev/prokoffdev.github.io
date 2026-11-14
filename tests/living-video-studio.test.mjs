@@ -49,9 +49,16 @@ describe('Living Video Diorama & Phase Control Tests', () => {
     // 1. Initial State
     assert.equal(studio.phase, VideoPhase.CODING);
 
-    // 2. Trigger Coffee
+    // 2. Trigger Coffee (only on button / hotspot click)
     studio.triggerCoffee();
     assert.equal(studio.phase, VideoPhase.COFFEE);
+    assert.equal(mockVideo.currentTime, 2.65);
+
+    // Coffee completes at 3.6s and returns to coding loop
+    mockVideo.currentTime = 3.65;
+    studio.handleTimeUpdate();
+    assert.equal(studio.phase, VideoPhase.CODING);
+    assert.equal(mockVideo.currentTime, 0.05);
 
     // 3. Trigger Build & Projects
     studio.triggerBuild();
@@ -82,9 +89,9 @@ describe('Living Video Diorama & Phase Control Tests', () => {
     assert.equal(mockVideo.muted, true);
   });
 
-  it('should loop coding phase seamlessly at 3.8s boundary', () => {
+  it('should loop coding phase seamlessly at 2.4s boundary without drinking coffee', () => {
     const mockVideo = {
-      currentTime: 3.82,
+      currentTime: 2.42,
       play: async () => {},
     };
     const studio = new LivingVideoStudio(null);

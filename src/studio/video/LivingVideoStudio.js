@@ -1,8 +1,8 @@
 import { ContentPanel } from '../ui/ContentPanel.js';
 
 export const VideoPhase = Object.freeze({
-  CODING: 'CODING',       // 0.0s - 3.8s (ambient coding loop)
-  COFFEE: 'COFFEE',       // 0.0s - 3.8s (coffee break toast & focus)
+  CODING: 'CODING',       // 0.0s - 2.4s (ambient coding loop: pure typing, no coffee)
+  COFFEE: 'COFFEE',       // 2.65s - 3.6s (coffee sip action only on demand)
   BUILD: 'BUILD',         // 3.85s - 5.8s (compile & green terminal screen)
   RELAX: 'RELAX',         // 5.85s - 7.4s (success stretch & hands behind head)
 });
@@ -100,37 +100,37 @@ export class LivingVideoStudio {
       {
         id: 'hotspot-coffee',
         label: '☕ Выпить кофе',
-        style: { left: '65.5%', top: '48.5%', width: '6%', height: '9%' },
+        style: { left: '67.2%', top: '47.2%', width: '6.2%', height: '11.1%' },
         action: () => this.triggerCoffee(),
       },
       {
         id: 'hotspot-monitors',
         label: '🚀 Проекты & Билд',
-        style: { left: '50.5%', top: '24.5%', width: '19%', height: '24%' },
+        style: { left: '51.5%', top: '23.6%', width: '20.3%', height: '26.4%' },
         action: () => this.triggerBuild(),
       },
       {
         id: 'hotspot-oleg',
         label: '👤 Олег (Обо мне)',
-        style: { left: '46.5%', top: '34.5%', width: '14%', height: '39%' },
+        style: { left: '46.1%', top: '33.3%', width: '14.8%', height: '41.7%' },
         action: () => this.triggerRelax(),
       },
       {
         id: 'hotspot-cat',
-        label: '🐱 Робо-кот',
-        style: { left: '33%', top: '69%', width: '13%', height: '16%' },
+        label: '🐱 Погладить робо-кота',
+        style: { left: '28.1%', top: '72.2%', width: '14.1%', height: '20.8%' },
         action: () => this.triggerCat(),
       },
       {
         id: 'hotspot-window',
         label: '🌆 Окно в город',
-        style: { left: '16.5%', top: '16.5%', width: '16%', height: '30%' },
+        style: { left: '14.1%', top: '15.3%', width: '15.6%', height: '31.9%' },
         action: () => this.showToast('🌆 Санкт-Петербург • Киберпанк-вечер • Код пишется без остановки'),
       },
       {
         id: 'hotspot-hologram',
         label: '🌐 Стек технологий',
-        style: { left: '79%', top: '48%', width: '9%', height: '15%' },
+        style: { left: '85.1%', top: '48.6%', width: '10.2%', height: '18.0%' },
         action: () => {
           this.showToast('🌐 Голографический процессор: React, TypeScript, Node.js, WebGL');
           setTimeout(() => this.contentPanel.open('skills'), 400);
@@ -230,10 +230,16 @@ export class LivingVideoStudio {
 
     switch (this.phase) {
       case VideoPhase.CODING:
-      case VideoPhase.COFFEE:
-        // Seamless loop between 0.0s and 3.8s
-        if (t >= 3.8) {
+        // Seamless loop between 0.05s and 2.4s (Pure typing - Oleg NEVER drinks coffee in idle)
+        if (t >= 2.4) {
           this.videoEl.currentTime = 0.05;
+        }
+        break;
+
+      case VideoPhase.COFFEE:
+        // Oleg drinks coffee from 2.65s to 3.6s, then returns to coding loop
+        if (t >= 3.6) {
+          this.playCodingLoop();
         }
         break;
 
@@ -266,6 +272,7 @@ export class LivingVideoStudio {
     this.phase = VideoPhase.COFFEE;
     this.showToast('☕ Кофе заварен: Олег делает глоток и анализирует архитектуру');
     if (!this.videoEl) return;
+    this.videoEl.currentTime = 2.65;
     this.videoEl.play().catch(() => {});
   }
 
@@ -286,7 +293,7 @@ export class LivingVideoStudio {
   }
 
   triggerCat() {
-    this.showToast('🐱 Робо-кот: мурлычет во сне и генерирует голографические подсказки');
+    this.showToast('🐱 Мурр! Робо-кот довольно мурлычет и активирует ассистента');
     this.contentPanel.open('assistant-help');
   }
 

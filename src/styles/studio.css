@@ -158,15 +158,35 @@
 }
 
 @media (max-width: 768px) {
+  .studio-hud-header {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+  }
+  .studio-hud-brand {
+    padding: 4px 10px;
+  }
+  .studio-hud-logo {
+    font-size: 12px;
+  }
   .studio-hud-tagline {
     display: none;
   }
+  .studio-mode-switcher {
+    padding: 2px;
+    gap: 2px;
+  }
+  .studio-mode-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
   .studio-controls-hint {
-    display: none;
+    display: none !important;
   }
   .studio-quickview-hint {
-    font-size: 12px;
-    padding: 4px 14px;
-    top: 68px;
+    display: none !important;
+  }
+  .studio-debug-toolbar {
+    display: none !important;
   }
 }

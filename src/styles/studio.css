@@ -40,6 +40,7 @@
   border: 1px solid rgba(100, 115, 134, 0.35);
   border-radius: 999px;
   padding: 6px 16px;
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   pointer-events: auto;
 }
@@ -71,6 +72,7 @@
   border-radius: 999px;
   padding: 4px;
   gap: 4px;
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   pointer-events: auto;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
@@ -116,6 +118,7 @@
   padding: 8px 14px;
   font-size: 12px;
   color: #cbd5e1;
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   z-index: 60;
   pointer-events: none;
@@ -147,6 +150,7 @@
   padding: 6px 18px;
   font-size: 13px;
   color: #e2e8f0;
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   z-index: 60;
   pointer-events: none;
@@ -168,6 +172,7 @@
   border: 1px solid rgba(100, 115, 134, 0.4);
   border-radius: 18px;
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 69, 77, 0.25);
+  -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
   padding: 16px;
   display: flex;
@@ -326,6 +331,7 @@
   color: #f1f5f9;
   font-size: 12px;
   font-weight: 600;
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
   transition: all 0.2s ease;
@@ -348,7 +354,7 @@
 @media (max-width: 768px) {
   .studio-character-card {
     top: auto;
-    bottom: 12px;
+    bottom: max(12px, env(safe-area-inset-bottom));
     left: 8px;
     right: 8px;
     max-width: none;
@@ -373,11 +379,11 @@
   }
   .studio-avatar-minipill {
     top: auto;
-    bottom: 12px;
+    bottom: max(12px, env(safe-area-inset-bottom));
     left: 8px;
   }
   .studio-hud-header {
-    top: 8px;
+    top: max(8px, env(safe-area-inset-top));
     left: 8px;
     right: 8px;
   }

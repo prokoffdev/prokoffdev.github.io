@@ -62,6 +62,25 @@ export class StudioScene extends Phaser.Scene {
     const base = import.meta.env.BASE_URL || '/';
     const spr = (file) => `${base.replace(/\/$/, '')}/assets/sprites/${file}`;
 
+    // Sleek progress bar for network asset streaming
+    const camW = this.cameras.main?.width || 1600;
+    const camH = this.cameras.main?.height || 1000;
+    const progressBox = this.add.graphics();
+    const progressBar = this.add.graphics();
+    progressBox.fillStyle(0x1a2332, 0.85);
+    progressBox.fillRoundedRect(camW / 2 - 140, camH / 2 - 12, 280, 24, 6);
+
+    this.load.on('progress', (val) => {
+      progressBar.clear();
+      progressBar.fillStyle(0xff454d, 1);
+      progressBar.fillRoundedRect(camW / 2 - 136, camH / 2 - 8, 272 * val, 16, 4);
+    });
+
+    this.load.on('complete', () => {
+      progressBar.destroy();
+      progressBox.destroy();
+    });
+
     // Master High-Fidelity 2.5D Room Environment
     this.load.image('room_environment', spr('room_clean_base.png'));
 
@@ -194,6 +213,9 @@ export class StudioScene extends Phaser.Scene {
             this.avatar.fsm.forceState('idle');
           }
         } else {
+          this.avatar?.stop();
+          this.roboCat?.stop();
+          this.cameraDirector?.setOverview();
           if (this.roomBg) {
             this.avatar.container?.setVisible(false);
             this.roboCat.container?.setVisible(false);

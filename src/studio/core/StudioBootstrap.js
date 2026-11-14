@@ -135,6 +135,11 @@ export class StudioBootstrap {
           width: 1600,
           height: 1000,
           backgroundColor: '#111923',
+          input: {
+            touch: {
+              capture: false,
+            },
+          },
           scale: {
             mode: Phaser.Scale.FIT,
             autoCenter: Phaser.Scale.CENTER_BOTH,

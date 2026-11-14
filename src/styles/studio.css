@@ -16,6 +16,7 @@
   height: auto !important;
   max-height: 85vh;
   outline: none;
+  touch-action: pan-y;
 }
 
 /* Studio HUD Header */

@@ -86,7 +86,10 @@ export class StudioScene extends Phaser.Scene {
     this.isoGrid = new IsoGrid();
     this.collisionGrid = new CollisionGrid(collisionMapData);
     this.pathFinder = new PathFinder(this.collisionGrid, this.isoGrid);
-    this.cameraDirector = new CameraDirector(this.cameras.main);
+    this.cameraDirector = new CameraDirector(this.cameras.main, {
+      overviewZoom: 0.93,
+      roomCenter: { x: 800, y: 520 },
+    });
 
     // 2. Entities
     this.avatar = new Avatar(this, this.isoGrid, this.pathFinder, 14, 6);
@@ -123,19 +126,36 @@ export class StudioScene extends Phaser.Scene {
         }
         if (action === 'purr') {
           this.roboCat?.react();
+          this.spawnFloatingHearts(1060, 770);
         }
       },
     });
 
+    this.hoverHighlight = this.add.graphics();
+    this.hoverHighlight.setDepth(1800);
+    this.currentHoveredHotspot = null;
+
     this.hotspotManager = new HotspotManager(this, {
       onSelect: (hotspot) => {
+        this.triggerClickRipple(hotspot);
         if (hotspot.id === 'OBJ_ROBOCAT') {
           this.roboCat?.react();
+          this.spawnFloatingHearts(1060, 770);
+        }
+        if (hotspot.id === 'OBJ_AVATAR') {
+          this.avatar?.greet();
+          this.studioHud?.openGreetingCard();
         }
         this.interactionRouter.handleHotspotSelected(hotspot, {
           col: Math.round(this.avatar.currentCol),
           row: Math.round(this.avatar.currentRow),
         });
+      },
+      onHover: (hotspot) => {
+        this.currentHoveredHotspot = hotspot;
+        if (!hotspot && this.hoverHighlight) {
+          this.hoverHighlight.clear();
+        }
       },
     });
 
@@ -180,6 +200,9 @@ export class StudioScene extends Phaser.Scene {
           }
         }
       },
+      onOpenPanel: (contentKey) => {
+        this.contentPanel?.open(contentKey);
+      },
     });
 
     // 4. Rendering Layers
@@ -192,6 +215,32 @@ export class StudioScene extends Phaser.Scene {
 
     // Set initial overview camera
     this.cameraDirector.setOverview(true);
+
+    // Deep link query parameters (?modal=... & ?mode=...)
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const targetModal = params.get('modal');
+      if (targetModal) {
+        this.time.delayedCall(450, () => {
+          this.contentPanel?.open(targetModal);
+        });
+      }
+      const initialMode = params.get('mode');
+      if (initialMode === 'explore') {
+        this.time.delayedCall(300, () => {
+          this.studioHud?.setMode(InteractionMode.EXPLORE);
+          this.interactionRouter?.setMode(InteractionMode.EXPLORE);
+          if (this.roomBg) {
+            this.avatar.container?.setVisible(true);
+            this.roboCat.container?.setVisible(true);
+            this.avatar.currentCol = 12;
+            this.avatar.currentRow = 7;
+            this.avatar.updatePosition();
+          }
+          this.avatar.moveTo(8, 7);
+        });
+      }
+    }
   }
 
   createFloorAndWalls() {
@@ -791,6 +840,101 @@ export class StudioScene extends Phaser.Scene {
     g.fillEllipse(900, 810, 64, 30);
   }
 
+  renderHoverHighlight(time) {
+    if (!this.hoverHighlight) return;
+    if (!this.currentHoveredHotspot) {
+      this.hoverHighlight.clear();
+      return;
+    }
+
+    const h = this.currentHoveredHotspot;
+    const pulse = 0.6 + Math.sin(time * 0.007) * 0.35;
+
+    let color = 0x00f0ff;
+    if (h.id === 'OBJ_AVATAR') color = 0xff454d;
+    else if (h.id === 'OBJ_ROBOCAT') color = 0x00f0ff;
+    else if (h.id === 'OBJ_PINBOARD') color = 0xfbbf24;
+    else if (h.id === 'OBJ_GAMEPAD') color = 0xa855f7;
+    else if (h.id === 'OBJ_PHONE') color = 0x10b981;
+    else if (h.id === 'OBJ_BOOKSHELF') color = 0x38bdf8;
+
+    this.hoverHighlight.clear();
+    this.hoverHighlight.lineStyle(3, color, pulse);
+    this.hoverHighlight.fillStyle(color, 0.12 * pulse);
+
+    if (h.shape.type === 'polygon' && h.shape.points) {
+      this.hoverHighlight.beginPath();
+      h.shape.points.forEach((pt, idx) => {
+        if (idx === 0) this.hoverHighlight.moveTo(pt[0], pt[1]);
+        else this.hoverHighlight.lineTo(pt[0], pt[1]);
+      });
+      this.hoverHighlight.closePath();
+      this.hoverHighlight.fillPath();
+      this.hoverHighlight.strokePath();
+    } else if (h.shape.type === 'circle' && h.shape.center) {
+      this.hoverHighlight.fillCircle(h.shape.center[0], h.shape.center[1], h.shape.radius);
+      this.hoverHighlight.strokeCircle(h.shape.center[0], h.shape.center[1], h.shape.radius);
+    }
+  }
+
+  triggerClickRipple(hotspot) {
+    if (!this.add || !hotspot || !hotspot.shape) return;
+    let cx = 800, cy = 500;
+    if (hotspot.shape.type === 'circle' && hotspot.shape.center) {
+      cx = hotspot.shape.center[0];
+      cy = hotspot.shape.center[1];
+    } else if (hotspot.shape.type === 'polygon' && hotspot.shape.points?.length > 0) {
+      cx = hotspot.shape.points.reduce((acc, p) => acc + p[0], 0) / hotspot.shape.points.length;
+      cy = hotspot.shape.points.reduce((acc, p) => acc + p[1], 0) / hotspot.shape.points.length;
+    }
+
+    const ripple = this.add.graphics();
+    ripple.setDepth(1850);
+    ripple.lineStyle(3, 0xff454d, 0.9);
+    ripple.strokeCircle(0, 0, 16);
+    ripple.setPosition(cx, cy);
+
+    this.tweens.add({
+      targets: ripple,
+      scaleX: 2.8,
+      scaleY: 2.8,
+      alpha: 0,
+      duration: 450,
+      ease: 'Cubic.easeOut',
+      onComplete: () => {
+        ripple.destroy();
+      },
+    });
+  }
+
+  spawnFloatingHearts(x, y) {
+    if (!this.add) return;
+    for (let i = 0; i < 4; i++) {
+      const heartText = this.add.text(
+        x + (Math.random() * 40 - 20),
+        y + (Math.random() * 20 - 10),
+        '❤️',
+        { font: '22px sans-serif' }
+      );
+      heartText.setOrigin(0.5);
+      heartText.setDepth(2100);
+      heartText.setAlpha(1);
+
+      this.tweens.add({
+        targets: heartText,
+        y: y - 65 - Math.random() * 35,
+        x: heartText.x + (Math.random() * 30 - 15),
+        alpha: 0,
+        scaleX: 1.3,
+        scaleY: 1.3,
+        duration: 1000 + i * 200,
+        ease: 'Cubic.easeOut',
+        delay: i * 120,
+        onComplete: () => heartText.destroy(),
+      });
+    }
+  }
+
   moveActorTo(targetCol, targetRow, onArrival = null) {
     if (this.avatar) {
       this.avatar.moveTo(targetCol, targetRow, onArrival);
@@ -802,5 +946,6 @@ export class StudioScene extends Phaser.Scene {
     this.roboCat?.update(time, delta);
     this.cameraDirector?.update(time, delta);
     this.renderAmbientVfx(time);
+    this.renderHoverHighlight(time);
   }
 }

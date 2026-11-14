@@ -206,6 +206,13 @@ export class ContentPanel {
           icon: '👤',
           title: 'Обо мне — Олег Прокофьев',
           render: () => `
+            <div class="studio-panel-avatar-badge" style="display: flex; align-items: center; gap: 14px; margin-bottom: 16px; padding: 12px; background: rgba(36, 48, 62, 0.4); border-radius: 12px; border: 1px solid rgba(100, 115, 134, 0.3);">
+              <img src="/assets/sprites/oleg_face_badge.png" style="width: 52px; height: 52px; border-radius: 12px; object-fit: cover; object-position: top center; border: 2px solid #ff454d;" alt="Олег Прокофьев" />
+              <div>
+                <h4 style="margin: 0; color: #fff; font-size: 15px;">Олег Прокофьев</h4>
+                <p style="margin: 3px 0 0 0; color: #ff454d; font-size: 11.5px; font-weight: 600;">Full-Stack & Systems Engineer</p>
+              </div>
+            </div>
             ${profileData.about.paragraphs.map((p) => `<p>${p}</p>`).join('')}
             <div class="studio-panel-card">
               <h4>Ключевые факты</h4>
@@ -241,7 +248,9 @@ export class ContentPanel {
           title: 'Робо-кот — Цифровой гид',
           render: () => `
             <div class="studio-cat-dialog">
-              <div class="studio-cat-avatar">🐱⚡</div>
+              <div class="studio-cat-avatar-wrap" style="flex-shrink: 0;">
+                <img src="/assets/sprites/cat_face_badge.png" style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover; object-position: top center; border: 2px solid #00f0ff;" alt="Робо-кот" />
+              </div>
               <div class="studio-cat-bubble">
                 Мр-р! Приветствую в студии Олега. Чем могу помочь?
               </div>

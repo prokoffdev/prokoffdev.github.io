@@ -157,7 +157,224 @@
   50% { opacity: 1; transform: translateX(-50%) translateY(-2px); }
 }
 
+/* Interactive Character Greeting Card (Stage 6.2) */
+.studio-character-card {
+  position: absolute;
+  top: 76px;
+  left: 24px;
+  max-width: 380px;
+  background: rgba(18, 26, 36, 0.94);
+  border: 1px solid rgba(100, 115, 134, 0.4);
+  border-radius: 18px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 69, 77, 0.25);
+  backdrop-filter: blur(14px);
+  padding: 16px;
+  display: flex;
+  gap: 14px;
+  z-index: 65;
+  pointer-events: auto;
+  animation: slideFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #f1f5f9;
+}
+
+@keyframes slideFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.studio-card-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 58px;
+  height: 58px;
+}
+
+.studio-card-avatar {
+  width: 58px;
+  height: 58px;
+  border-radius: 14px;
+  object-fit: cover;
+  object-position: top center;
+  border: 2px solid rgba(255, 69, 77, 0.6);
+  background: #111923;
+  display: block;
+}
+
+.studio-avatar-online {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 13px;
+  height: 13px;
+  background: #10b981;
+  border: 2px solid #111923;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.7);
+}
+
+.studio-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.studio-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 6px;
+}
+
+.studio-card-author {
+  display: flex;
+  flex-direction: column;
+}
+
+.studio-card-name {
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.studio-card-role {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.studio-card-close {
+  background: rgba(36, 48, 62, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  color: #94a3b8;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+  line-height: 1;
+}
+
+.studio-card-close:hover {
+  background: rgba(255, 69, 77, 0.25);
+  color: #ff454d;
+  border-color: #ff454d;
+}
+
+.studio-card-msg {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #cbd5e1;
+  margin: 0 0 10px 0;
+}
+
+.studio-card-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.studio-card-chip {
+  background: rgba(36, 48, 62, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #e2e8f0;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.2;
+}
+
+.studio-card-chip:hover {
+  background: rgba(255, 69, 77, 0.2);
+  border-color: rgba(255, 69, 77, 0.5);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+/* Minimized Trigger Pill */
+.studio-avatar-minipill {
+  position: absolute;
+  top: 76px;
+  left: 24px;
+  background: rgba(18, 26, 36, 0.9);
+  border: 1px solid rgba(255, 69, 77, 0.4);
+  border-radius: 999px;
+  padding: 4px 12px 4px 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  z-index: 65;
+  color: #f1f5f9;
+  font-size: 12px;
+  font-weight: 600;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s ease;
+}
+
+.studio-avatar-minipill img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.studio-avatar-minipill:hover {
+  background: rgba(255, 69, 77, 0.2);
+  border-color: #ff454d;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
 @media (max-width: 768px) {
+  .studio-character-card {
+    top: auto;
+    bottom: 12px;
+    left: 8px;
+    right: 8px;
+    max-width: none;
+    padding: 12px;
+    gap: 10px;
+  }
+  .studio-card-avatar-wrap {
+    width: 44px;
+    height: 44px;
+  }
+  .studio-card-avatar {
+    width: 44px;
+    height: 44px;
+  }
+  .studio-card-msg {
+    font-size: 11.5px;
+    margin-bottom: 8px;
+  }
+  .studio-card-chip {
+    padding: 3px 8px;
+    font-size: 10.5px;
+  }
+  .studio-avatar-minipill {
+    top: auto;
+    bottom: 12px;
+    left: 8px;
+  }
   .studio-hud-header {
     top: 8px;
     left: 8px;

@@ -142,6 +142,19 @@ export class Avatar {
     if (this.fsm.is('typing') || this.fsm.is('thinking')) {
       // Must stand up first
       this.fsm.dispatch('USER_START_MOVE');
+      
+      // Animate standing up from desk chair
+      if (this.sprite && this.scene && this.scene.tweens) {
+        this.scene.tweens.add({
+          targets: this.sprite,
+          scaleX: 0.35,
+          scaleY: 0.35,
+          y: -6,
+          duration: 350,
+          ease: 'Cubic.easeOut',
+        });
+      }
+
       // Transition stand_up takes ~400ms then starts walk
       if (this.scene && this.scene.time) {
         this.scene.time.delayedCall(400, () => {
@@ -206,6 +219,19 @@ export class Avatar {
   returnToDesk(onSeated = null) {
     this.moveTo(14, 6, () => {
       this.fsm.forceState('sit_down');
+      this.currentDirection = 'desk_facing';
+
+      if (this.sprite && this.scene && this.scene.tweens) {
+        this.scene.tweens.add({
+          targets: this.sprite,
+          scaleX: 0.40,
+          scaleY: 0.40,
+          y: 0,
+          duration: 400,
+          ease: 'Cubic.easeInOut',
+        });
+      }
+
       if (this.scene && this.scene.time) {
         this.scene.time.delayedCall(500, () => {
           this.fsm.forceState('typing');

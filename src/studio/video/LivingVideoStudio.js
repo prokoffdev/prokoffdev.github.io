@@ -126,7 +126,7 @@ export class LivingVideoStudio {
       {
         id: 'hotspot-window',
         label: '🌆 Окно в город',
-        style: { left: '14.1%', top: '15.3%', width: '15.6%', height: '31.9%' },
+        style: { left: '17.0%', top: '7.0%', width: '14.8%', height: '32.5%' },
         action: () => this.showToast('🌆 Санкт-Петербург • Киберпанк-вечер • Код пишется без остановки'),
       },
       {

@@ -2,9 +2,9 @@ import { ContentPanel } from '../ui/ContentPanel.js';
 
 export const VideoPhase = Object.freeze({
   CODING: 'CODING',       // 0.0s - 4.0s (ambient coding loop: pure typing, locked tripod camera)
-  CAT_REACT: 'CAT_REACT', // 4.0s - 7.5s (cat wake & pet: stretches, glowing LED eyes, wags tail)
-  COFFEE: 'COFFEE',       // 7.5s - 12.0s (Oleg lifts mug from desk, drinks, puts back down)
-  BUILD: 'BUILD',         // compile & projects
+  CAT_REACT: 'CAT_REACT', // 4.0s - 8.5s (cat wake & pet: stretches, glowing LED eyes, wags tail)
+  COFFEE: 'COFFEE',       // 8.5s - 12.5s (Oleg reaches for mug on desk, takes sip, puts back down)
+  BUILD: 'BUILD',         // 12.5s - 16.5s (holographic globe spins with glowing cyber grid & tech stack)
   RELAX: 'RELAX',         // success & developer profile
 });
 
@@ -239,16 +239,24 @@ export class LivingVideoStudio {
 
       case VideoPhase.CAT_REACT:
         // Cat wakes up, stretches, opens cyan LED eyes, wags tail, curls back to sleep
-        if (t >= 7.45) {
+        if (t >= 8.45) {
           this.playCodingLoop();
           this.contentPanel.open('assistant-help');
         }
         break;
 
       case VideoPhase.COFFEE:
-        // Oleg drinks coffee from 7.5s to 12.0s, puts mug back on desk, returns to typing
-        if (t >= 11.95) {
+        // Oleg drinks coffee from 8.5s to 12.5s, puts mug back on desk, returns to typing
+        if (t >= 12.45) {
           this.playCodingLoop();
+        }
+        break;
+
+      case VideoPhase.BUILD:
+        // Holographic globe spins and radiates cyber particles from 12.5s to 16.5s
+        if (t >= 16.45) {
+          this.playCodingLoop();
+          this.contentPanel.open('projects');
         }
         break;
     }
@@ -265,14 +273,16 @@ export class LivingVideoStudio {
     this.phase = VideoPhase.COFFEE;
     this.showToast('☕ Кофе заварен: Олег берет кружку со стола, делает глоток и возвращается к коду');
     if (!this.videoEl) return;
-    this.videoEl.currentTime = 7.52;
+    this.videoEl.currentTime = 8.52;
     this.videoEl.play().catch(() => {});
   }
 
   triggerBuild() {
     this.phase = VideoPhase.BUILD;
-    this.showToast('🚀 Запуск компиляции: Тесты 100% PASS, билд успешен!');
-    this.contentPanel.open('projects');
+    this.showToast('🚀 Запуск компиляции: Голограмма проектов активна, билд успешен!');
+    if (!this.videoEl) return;
+    this.videoEl.currentTime = 12.52;
+    this.videoEl.play().catch(() => {});
   }
 
   triggerRelax() {

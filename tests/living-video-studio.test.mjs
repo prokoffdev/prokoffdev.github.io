@@ -55,7 +55,7 @@ describe('Living Video Diorama & Phase Control Tests', () => {
     assert.equal(studio.phase, VideoPhase.CAT_REACT);
     assert.equal(mockVideo.currentTime, 4.02);
 
-    mockVideo.currentTime = 7.48;
+    mockVideo.currentTime = 8.48;
     studio.handleTimeUpdate();
     assert.equal(studio.phase, VideoPhase.CODING);
     assert.equal(mockVideo.currentTime, 0.05);
@@ -64,17 +64,23 @@ describe('Living Video Diorama & Phase Control Tests', () => {
     // 3. Trigger Coffee (only on user trigger)
     studio.triggerCoffee();
     assert.equal(studio.phase, VideoPhase.COFFEE);
-    assert.equal(mockVideo.currentTime, 7.52);
+    assert.equal(mockVideo.currentTime, 8.52);
 
-    // Coffee completes at 12.0s and returns to coding loop
-    mockVideo.currentTime = 11.98;
+    // Coffee completes at 12.5s and returns to coding loop
+    mockVideo.currentTime = 12.48;
     studio.handleTimeUpdate();
     assert.equal(studio.phase, VideoPhase.CODING);
     assert.equal(mockVideo.currentTime, 0.05);
 
-    // 4. Trigger Build & Projects
+    // 4. Trigger Build & Projects (video scrubs to 12.52s and plays hologram animation)
     studio.triggerBuild();
     assert.equal(studio.phase, VideoPhase.BUILD);
+    assert.equal(mockVideo.currentTime, 12.52);
+
+    mockVideo.currentTime = 16.48;
+    studio.handleTimeUpdate();
+    assert.equal(studio.phase, VideoPhase.CODING);
+    assert.equal(mockVideo.currentTime, 0.05);
     assert.equal(mockModal.openedSection, 'projects');
 
     // 5. Trigger Relax & Profile

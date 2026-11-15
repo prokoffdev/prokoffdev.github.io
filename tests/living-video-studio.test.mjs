@@ -53,9 +53,9 @@ describe('Living Video Diorama & Phase Control Tests', () => {
     // 2. Trigger Cat reaction (wakes up, stretches, wags tail, returns to sleep)
     studio.triggerCat();
     assert.equal(studio.phase, VideoPhase.CAT_REACT);
-    assert.equal(mockVideo.currentTime, 4.02);
+    assert.equal(mockVideo.currentTime, 3.52);
 
-    mockVideo.currentTime = 8.48;
+    mockVideo.currentTime = 6.48;
     studio.handleTimeUpdate();
     assert.equal(studio.phase, VideoPhase.CODING);
     assert.equal(mockVideo.currentTime, 0.05);
@@ -64,20 +64,20 @@ describe('Living Video Diorama & Phase Control Tests', () => {
     // 3. Trigger Coffee (only on user trigger)
     studio.triggerCoffee();
     assert.equal(studio.phase, VideoPhase.COFFEE);
-    assert.equal(mockVideo.currentTime, 8.52);
+    assert.equal(mockVideo.currentTime, 6.52);
 
-    // Coffee completes at 12.5s and returns to coding loop
-    mockVideo.currentTime = 12.48;
+    // Coffee completes at 10.0s and returns to coding loop
+    mockVideo.currentTime = 9.98;
     studio.handleTimeUpdate();
     assert.equal(studio.phase, VideoPhase.CODING);
     assert.equal(mockVideo.currentTime, 0.05);
 
-    // 4. Trigger Build & Projects (video scrubs to 12.52s and plays hologram animation)
+    // 4. Trigger Build & Projects (video scrubs to 10.02s and plays hologram animation)
     studio.triggerBuild('projects');
     assert.equal(studio.phase, VideoPhase.BUILD);
-    assert.equal(mockVideo.currentTime, 12.52);
+    assert.equal(mockVideo.currentTime, 10.02);
 
-    mockVideo.currentTime = 16.48;
+    mockVideo.currentTime = 12.98;
     studio.handleTimeUpdate();
     assert.equal(studio.phase, VideoPhase.CODING);
     assert.equal(mockVideo.currentTime, 0.05);
@@ -86,9 +86,9 @@ describe('Living Video Diorama & Phase Control Tests', () => {
     // 4b. Trigger Tech Stack Hologram
     studio.triggerHologram('skills');
     assert.equal(studio.phase, VideoPhase.BUILD);
-    assert.equal(mockVideo.currentTime, 12.52);
+    assert.equal(mockVideo.currentTime, 10.02);
 
-    mockVideo.currentTime = 16.48;
+    mockVideo.currentTime = 12.98;
     studio.handleTimeUpdate();
     assert.equal(studio.phase, VideoPhase.CODING);
     assert.equal(mockVideo.currentTime, 0.05);
@@ -109,9 +109,9 @@ describe('Living Video Diorama & Phase Control Tests', () => {
     assert.equal(mockVideo.muted, true);
   });
 
-  it('should loop coding phase seamlessly at 3.95s boundary without drinking coffee', () => {
+  it('should loop coding phase seamlessly at 3.45s boundary without jumping into cat phase', () => {
     const mockVideo = {
-      currentTime: 3.98,
+      currentTime: 3.48,
       play: async () => {},
     };
     const studio = new LivingVideoStudio(null);

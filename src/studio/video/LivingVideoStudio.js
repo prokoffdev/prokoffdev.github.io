@@ -1,10 +1,10 @@
 import { ContentPanel } from '../ui/ContentPanel.js';
 
 export const VideoPhase = Object.freeze({
-  CODING: 'CODING',       // 0.0s - 4.0s (ambient coding loop: pure typing, locked tripod camera)
-  CAT_REACT: 'CAT_REACT', // 4.0s - 8.5s (cat wake & pet: stretches, glowing LED eyes, wags tail)
-  COFFEE: 'COFFEE',       // 8.5s - 12.5s (Oleg reaches for mug on desk, takes sip, puts back down)
-  BUILD: 'BUILD',         // 12.5s - 16.5s (holographic globe spins with glowing cyber grid & tech stack)
+  CODING: 'CODING',       // 0.0s - 3.5s (ambient coding loop: pure typing, locked tripod camera)
+  CAT_REACT: 'CAT_REACT', // 3.5s - 6.5s (cat wake & pet: stretches, glowing cyan LED eyes, wags tail, curls back to sleep)
+  COFFEE: 'COFFEE',       // 6.5s - 10.0s (Oleg reaches for mug on desk, takes sip, puts back down)
+  BUILD: 'BUILD',         // 10.0s - 13.0s (holographic globe spins with glowing cyber grid & tech stack)
   RELAX: 'RELAX',         // success & developer profile
 });
 
@@ -26,7 +26,9 @@ export class LivingVideoStudio {
     this.isMuted = true;
     this.toastTimeout = null;
     this.pendingModal = null;
+    this.frameCallbackId = null;
     this.boundTimeUpdate = this.handleTimeUpdate.bind(this);
+    this.boundFrameCheck = this.handleFrameCheck.bind(this);
 
     this.init();
   }
@@ -88,6 +90,7 @@ export class LivingVideoStudio {
 
     // 6. Event Listeners
     this.videoEl.addEventListener('timeupdate', this.boundTimeUpdate);
+    this.startFrameLoop();
 
     // Initial play trigger
     this.videoEl.play().catch(() => {
@@ -102,37 +105,37 @@ export class LivingVideoStudio {
       {
         id: 'hotspot-coffee',
         label: '☕ Выпить кофе',
-        style: { left: '67.5%', top: '48.5%', width: '5.5%', height: '10.5%' },
+        style: { left: '70.3%', top: '37.3%', width: '4.2%', height: '8.5%' },
         action: () => this.triggerCoffee(),
       },
       {
         id: 'hotspot-monitors',
         label: '🚀 Проекты & Билд',
-        style: { left: '52.0%', top: '22.0%', width: '20.5%', height: '26.0%' },
+        style: { left: '52.0%', top: '14.0%', width: '17.5%', height: '22.0%' },
         action: () => this.triggerBuild('projects'),
       },
       {
         id: 'hotspot-oleg',
         label: '👤 Олег (Обо мне)',
-        style: { left: '45.5%', top: '48.0%', width: '13.5%', height: '32.0%' },
+        style: { left: '49.0%', top: '23.5%', width: '10.0%', height: '37.5%' },
         action: () => this.triggerRelax(),
       },
       {
         id: 'hotspot-cat',
         label: '🐱 Погладить робо-кота',
-        style: { left: '27.5%', top: '61.5%', width: '17.5%', height: '27.0%' },
+        style: { left: '33.5%', top: '65.0%', width: '12.5%', height: '23.5%' },
         action: () => this.triggerCat(),
       },
       {
         id: 'hotspot-window',
         label: '🌆 Окно в город',
-        style: { left: '17.0%', top: '7.0%', width: '14.8%', height: '32.5%' },
+        style: { left: '21.0%', top: '4.8%', width: '11.8%', height: '27.0%' },
         action: () => this.showToast('🌆 Санкт-Петербург • Киберпанк-вечер • Код пишется без остановки'),
       },
       {
         id: 'hotspot-hologram',
         label: '🌐 Стек технологий',
-        style: { left: '81.5%', top: '36.0%', width: '12.5%', height: '24.5%' },
+        style: { left: '87.0%', top: '30.0%', width: '8.0%', height: '20.5%' },
         action: () => this.triggerHologram('skills'),
       },
     ];
@@ -223,36 +226,54 @@ export class LivingVideoStudio {
     return btn;
   }
 
-  handleTimeUpdate() {
+  startFrameLoop() {
+    if (!this.videoEl || typeof window === 'undefined') return;
+    const loop = () => {
+      this.handleFrameCheck();
+      if (!this.videoEl) return;
+      if ('requestVideoFrameCallback' in this.videoEl) {
+        this.frameCallbackId = this.videoEl.requestVideoFrameCallback(loop);
+      } else if (typeof requestAnimationFrame !== 'undefined') {
+        this.frameCallbackId = requestAnimationFrame(loop);
+      }
+    };
+    if ('requestVideoFrameCallback' in this.videoEl) {
+      this.frameCallbackId = this.videoEl.requestVideoFrameCallback(loop);
+    } else if (typeof requestAnimationFrame !== 'undefined') {
+      this.frameCallbackId = requestAnimationFrame(loop);
+    }
+  }
+
+  handleFrameCheck() {
     if (!this.videoEl) return;
     const t = this.videoEl.currentTime;
 
     switch (this.phase) {
       case VideoPhase.CODING:
-        // Seamless loop between 0.05s and 3.95s (Pure typing - locked tripod, zero drift)
-        if (t >= 3.95) {
+        // Seamless loop before reaching cat segment boundary at 3.5s
+        if (t >= 3.45) {
           this.videoEl.currentTime = 0.05;
         }
         break;
 
       case VideoPhase.CAT_REACT:
-        // Cat wakes up, stretches, opens cyan LED eyes, wags tail, curls back to sleep
-        if (t >= 8.45) {
+        // Cat reaction completes cleanly at 6.45s and returns to typing
+        if (t >= 6.45) {
           this.playCodingLoop();
           this.contentPanel.open('assistant-help');
         }
         break;
 
       case VideoPhase.COFFEE:
-        // Oleg drinks coffee from 8.5s to 12.5s, puts mug back on desk, returns to typing
-        if (t >= 12.45) {
+        // Oleg drinks coffee from 6.5s to 10.0s, puts mug back on desk, returns to typing
+        if (t >= 9.95) {
           this.playCodingLoop();
         }
         break;
 
       case VideoPhase.BUILD:
-        // Holographic globe spins and radiates cyber particles from 12.5s to 16.5s
-        if (t >= 16.45) {
+        // Holographic globe spins from 10.0s to 13.0s
+        if (t >= 12.95) {
           this.playCodingLoop();
           const target = this.pendingModal || 'projects';
           this.pendingModal = null;
@@ -260,6 +281,10 @@ export class LivingVideoStudio {
         }
         break;
     }
+  }
+
+  handleTimeUpdate() {
+    this.handleFrameCheck();
   }
 
   playCodingLoop() {
@@ -273,7 +298,7 @@ export class LivingVideoStudio {
     this.phase = VideoPhase.COFFEE;
     this.showToast('☕ Кофе заварен: Олег берет кружку со стола, делает глоток и возвращается к коду');
     if (!this.videoEl) return;
-    this.videoEl.currentTime = 8.52;
+    this.videoEl.currentTime = 6.52;
     this.videoEl.play().catch(() => {});
   }
 
@@ -282,7 +307,7 @@ export class LivingVideoStudio {
     this.pendingModal = target;
     this.showToast('🚀 Запуск компиляции: Голограмма проектов активна, билд успешен!');
     if (!this.videoEl) return;
-    this.videoEl.currentTime = 12.52;
+    this.videoEl.currentTime = 10.02;
     this.videoEl.play().catch(() => {});
   }
 
@@ -291,7 +316,7 @@ export class LivingVideoStudio {
     this.pendingModal = target;
     this.showToast('🌐 Голографический процессор: React, TypeScript, Node.js, WebGL');
     if (!this.videoEl) return;
-    this.videoEl.currentTime = 12.52;
+    this.videoEl.currentTime = 10.02;
     this.videoEl.play().catch(() => {});
   }
 
@@ -305,7 +330,7 @@ export class LivingVideoStudio {
     this.phase = VideoPhase.CAT_REACT;
     this.showToast('🐱 Мурр! Робо-кот потягивается, открывает глаза и мурлычет');
     if (!this.videoEl) return;
-    this.videoEl.currentTime = 4.02;
+    this.videoEl.currentTime = 3.52;
     this.videoEl.play().catch(() => {});
   }
 
@@ -338,6 +363,14 @@ export class LivingVideoStudio {
   }
 
   destroy() {
+    if (this.frameCallbackId && this.videoEl) {
+      if ('cancelVideoFrameCallback' in this.videoEl) {
+        this.videoEl.cancelVideoFrameCallback(this.frameCallbackId);
+      } else if (typeof cancelAnimationFrame !== 'undefined') {
+        cancelAnimationFrame(this.frameCallbackId);
+      }
+      this.frameCallbackId = null;
+    }
     if (this.videoEl) {
       this.videoEl.removeEventListener('timeupdate', this.boundTimeUpdate);
       this.videoEl.pause();

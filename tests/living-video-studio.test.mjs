@@ -73,7 +73,7 @@ describe('Living Video Diorama & Phase Control Tests', () => {
     assert.equal(mockVideo.currentTime, 0.05);
 
     // 4. Trigger Build & Projects (video scrubs to 12.52s and plays hologram animation)
-    studio.triggerBuild();
+    studio.triggerBuild('projects');
     assert.equal(studio.phase, VideoPhase.BUILD);
     assert.equal(mockVideo.currentTime, 12.52);
 
@@ -82,6 +82,17 @@ describe('Living Video Diorama & Phase Control Tests', () => {
     assert.equal(studio.phase, VideoPhase.CODING);
     assert.equal(mockVideo.currentTime, 0.05);
     assert.equal(mockModal.openedSection, 'projects');
+
+    // 4b. Trigger Tech Stack Hologram
+    studio.triggerHologram('skills');
+    assert.equal(studio.phase, VideoPhase.BUILD);
+    assert.equal(mockVideo.currentTime, 12.52);
+
+    mockVideo.currentTime = 16.48;
+    studio.handleTimeUpdate();
+    assert.equal(studio.phase, VideoPhase.CODING);
+    assert.equal(mockVideo.currentTime, 0.05);
+    assert.equal(mockModal.openedSection, 'skills');
 
     // 5. Trigger Relax & Profile
     studio.triggerRelax();

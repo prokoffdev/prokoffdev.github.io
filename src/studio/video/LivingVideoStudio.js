@@ -25,6 +25,7 @@ export class LivingVideoStudio {
     this.contentPanel = null;
     this.isMuted = true;
     this.toastTimeout = null;
+    this.pendingModal = null;
     this.boundTimeUpdate = this.handleTimeUpdate.bind(this);
 
     this.init();
@@ -101,25 +102,25 @@ export class LivingVideoStudio {
       {
         id: 'hotspot-coffee',
         label: '☕ Выпить кофе',
-        style: { left: '67.2%', top: '47.2%', width: '6.2%', height: '11.1%' },
+        style: { left: '67.5%', top: '48.5%', width: '5.5%', height: '10.5%' },
         action: () => this.triggerCoffee(),
       },
       {
         id: 'hotspot-monitors',
         label: '🚀 Проекты & Билд',
-        style: { left: '51.5%', top: '23.6%', width: '20.3%', height: '26.4%' },
-        action: () => this.triggerBuild(),
+        style: { left: '52.0%', top: '22.0%', width: '20.5%', height: '26.0%' },
+        action: () => this.triggerBuild('projects'),
       },
       {
         id: 'hotspot-oleg',
         label: '👤 Олег (Обо мне)',
-        style: { left: '46.1%', top: '33.3%', width: '14.8%', height: '41.7%' },
+        style: { left: '45.5%', top: '48.0%', width: '13.5%', height: '32.0%' },
         action: () => this.triggerRelax(),
       },
       {
         id: 'hotspot-cat',
         label: '🐱 Погладить робо-кота',
-        style: { left: '28.1%', top: '72.2%', width: '14.1%', height: '20.8%' },
+        style: { left: '27.5%', top: '61.5%', width: '17.5%', height: '27.0%' },
         action: () => this.triggerCat(),
       },
       {
@@ -131,11 +132,8 @@ export class LivingVideoStudio {
       {
         id: 'hotspot-hologram',
         label: '🌐 Стек технологий',
-        style: { left: '85.1%', top: '48.6%', width: '10.2%', height: '18.0%' },
-        action: () => {
-          this.showToast('🌐 Голографический процессор: React, TypeScript, Node.js, WebGL');
-          setTimeout(() => this.contentPanel.open('skills'), 400);
-        },
+        style: { left: '81.5%', top: '36.0%', width: '12.5%', height: '24.5%' },
+        action: () => this.triggerHologram('skills'),
       },
     ];
 
@@ -256,7 +254,9 @@ export class LivingVideoStudio {
         // Holographic globe spins and radiates cyber particles from 12.5s to 16.5s
         if (t >= 16.45) {
           this.playCodingLoop();
-          this.contentPanel.open('projects');
+          const target = this.pendingModal || 'projects';
+          this.pendingModal = null;
+          this.contentPanel.open(target);
         }
         break;
     }
@@ -277,9 +277,19 @@ export class LivingVideoStudio {
     this.videoEl.play().catch(() => {});
   }
 
-  triggerBuild() {
+  triggerBuild(target = 'projects') {
     this.phase = VideoPhase.BUILD;
+    this.pendingModal = target;
     this.showToast('🚀 Запуск компиляции: Голограмма проектов активна, билд успешен!');
+    if (!this.videoEl) return;
+    this.videoEl.currentTime = 12.52;
+    this.videoEl.play().catch(() => {});
+  }
+
+  triggerHologram(target = 'skills') {
+    this.phase = VideoPhase.BUILD;
+    this.pendingModal = target;
+    this.showToast('🌐 Голографический процессор: React, TypeScript, Node.js, WebGL');
     if (!this.videoEl) return;
     this.videoEl.currentTime = 12.52;
     this.videoEl.play().catch(() => {});

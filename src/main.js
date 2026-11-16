@@ -22,8 +22,8 @@ initTheme();
 // Initialize panels foundation
 const panels = initPanels();
 
-// Initialize Studio Bootstrap (safe feature-flagged container)
-const studio = new StudioBootstrap();
+// Initialize Studio Bootstrap (active dual living studio)
+const studio = new StudioBootstrap({ enabled: true });
 studio.mount('#studio-mount');
 studio.initialize();
 

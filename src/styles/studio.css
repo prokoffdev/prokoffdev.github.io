@@ -2,12 +2,10 @@
 .studio-mount {
   position: relative;
   width: 100%;
-  max-width: 1600px;
-  margin: 76px auto 32px auto;
-  overflow: hidden;
-  background: #111923;
-  border-radius: 16px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(100, 115, 134, 0.25);
+  max-width: 1520px;
+  margin: 84px auto 32px auto;
+  padding: 0 16px;
+  box-sizing: border-box;
 }
 
 .studio-mount canvas {

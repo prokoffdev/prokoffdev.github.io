@@ -6,7 +6,7 @@
   position: relative;
   width: 100%;
   max-width: 1480px;
-  margin: 32px auto 40px auto;
+  margin: 0 auto;
   border-radius: 24px;
   overflow: hidden;
   box-shadow: 0 24px 64px -12px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(0, 229, 255, 0.16);

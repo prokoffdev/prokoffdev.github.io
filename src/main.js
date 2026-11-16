@@ -15,6 +15,9 @@ const isTouch = window.matchMedia("(hover: none)").matches;
 
 // Initialize navigation (Lenis + ScrollTrigger ticker + smooth hash links)
 const lenis = initNavigation(reduceMotion);
+if (typeof window !== 'undefined') {
+  window.__lenis = lenis;
+}
 
 // Initialize theme switcher
 initTheme();

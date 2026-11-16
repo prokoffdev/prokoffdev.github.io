@@ -219,7 +219,7 @@ export class LivingVideoStudio {
     actions.className = 'console-hud-actions cat-actions';
 
     this.petCatBtn = this.createConsoleBtn('🐱 Погладить кота', () => this.triggerCat());
-    const askAiBtn = this.createConsoleBtn('🤖 Спросить AI', () => this.contentPanel.open('assistant-help'));
+    const askAiBtn = this.createConsoleBtn('🤖 Автоматизации & AI', () => this.contentPanel.open('assistant-help'));
 
     actions.appendChild(this.petCatBtn);
     actions.appendChild(askAiBtn);

@@ -21,18 +21,29 @@ describe('Living Video Diorama & Phase Control Tests', () => {
   it('should instantiate safely in non-browser (Node) environment without crashing', () => {
     const studio = new LivingVideoStudio(null);
     assert.equal(studio.phase, VideoPhase.CODING);
+    assert.equal(studio.catPhase, 'SLEEP');
     assert.equal(studio.isMuted, true);
-    assert.equal(studio.videoEl, null);
+    assert.equal(studio.devVideoEl, null);
+    assert.equal(studio.catVideoEl, null);
   });
 
-  it('should manage phase transitions and video scrubbing logic', () => {
-    // Mock video element and container
-    const mockVideo = {
+  it('should manage phase transitions, dual video scrubbing and independent loops', () => {
+    const mockDevVideo = {
       currentTime: 0,
       muted: true,
       paused: false,
       play: async () => {},
-      pause: () => { mockVideo.paused = true; },
+      pause: () => { mockDevVideo.paused = true; },
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    };
+
+    const mockCatVideo = {
+      currentTime: 0,
+      muted: true,
+      paused: false,
+      play: async () => {},
+      pause: () => { mockCatVideo.paused = true; },
       addEventListener: () => {},
       removeEventListener: () => {},
     };
@@ -44,54 +55,51 @@ describe('Living Video Diorama & Phase Control Tests', () => {
     };
 
     const studio = new LivingVideoStudio(null);
-    studio.videoEl = mockVideo;
+    studio.devVideoEl = mockDevVideo;
+    studio.catVideoEl = mockCatVideo;
+    studio.videoEl = mockDevVideo;
     studio.contentPanel = mockModal;
 
     // 1. Initial State
     assert.equal(studio.phase, VideoPhase.CODING);
+    assert.equal(studio.catPhase, 'SLEEP');
 
-    // 2. Trigger Cat reaction (wakes up, stretches, wags tail, returns to sleep)
+    // 2. Trigger Cat reaction (cat wakes up on its own video without disturbing dev!)
     studio.triggerCat();
-    assert.equal(studio.phase, VideoPhase.CAT_REACT);
-    assert.equal(mockVideo.currentTime, 3.52);
+    assert.equal(studio.catPhase, 'WAKE');
+    assert.equal(mockCatVideo.currentTime, 1.90);
+    // Dev video is completely untouched
+    assert.equal(mockDevVideo.currentTime, 0);
 
-    mockVideo.currentTime = 6.48;
-    studio.handleTimeUpdate();
-    assert.equal(studio.phase, VideoPhase.CODING);
-    assert.equal(mockVideo.currentTime, 0.05);
-    assert.equal(mockModal.openedSection, 'assistant-help');
+    // Cat reaches wake threshold (8.0s) and transitions to ALERT loop
+    mockCatVideo.currentTime = 8.05;
+    studio.handleCatTimeUpdate();
+    assert.equal(studio.catPhase, 'ALERT');
 
-    // 3. Trigger Coffee (only on user trigger)
+    // Cat alert loop boundary test
+    mockCatVideo.currentTime = 9.95;
+    studio.handleCatTimeUpdate();
+    assert.equal(mockCatVideo.currentTime, 7.50);
+
+    // 3. Trigger Coffee (only dev video plays sip without touching cat!)
     studio.triggerCoffee();
     assert.equal(studio.phase, VideoPhase.COFFEE);
-    assert.equal(mockVideo.currentTime, 6.52);
+    assert.equal(mockDevVideo.currentTime, 2.90);
 
-    // Coffee completes at 10.0s and returns to coding loop
-    mockVideo.currentTime = 9.98;
-    studio.handleTimeUpdate();
+    // Coffee completes at 6.9s and returns to coding loop
+    mockDevVideo.currentTime = 6.90;
+    studio.handleDevTimeUpdate();
     assert.equal(studio.phase, VideoPhase.CODING);
-    assert.equal(mockVideo.currentTime, 0.05);
+    assert.equal(mockDevVideo.currentTime, 0.05);
 
-    // 4. Trigger Build & Projects (video scrubs to 10.02s and plays hologram animation)
+    // 4. Trigger Build & Projects
     studio.triggerBuild('projects');
     assert.equal(studio.phase, VideoPhase.BUILD);
-    assert.equal(mockVideo.currentTime, 10.02);
-
-    mockVideo.currentTime = 12.98;
-    studio.handleTimeUpdate();
-    assert.equal(studio.phase, VideoPhase.CODING);
-    assert.equal(mockVideo.currentTime, 0.05);
     assert.equal(mockModal.openedSection, 'projects');
 
     // 4b. Trigger Tech Stack Hologram
     studio.triggerHologram('skills');
     assert.equal(studio.phase, VideoPhase.BUILD);
-    assert.equal(mockVideo.currentTime, 10.02);
-
-    mockVideo.currentTime = 12.98;
-    studio.handleTimeUpdate();
-    assert.equal(studio.phase, VideoPhase.CODING);
-    assert.equal(mockVideo.currentTime, 0.05);
     assert.equal(mockModal.openedSection, 'skills');
 
     // 5. Trigger Relax & Profile
@@ -103,22 +111,38 @@ describe('Living Video Diorama & Phase Control Tests', () => {
     assert.equal(studio.isMuted, true);
     studio.toggleSound();
     assert.equal(studio.isMuted, false);
-    assert.equal(mockVideo.muted, false);
+    assert.equal(mockDevVideo.muted, false);
+    assert.equal(mockCatVideo.muted, false);
+
     studio.toggleSound();
     assert.equal(studio.isMuted, true);
-    assert.equal(mockVideo.muted, true);
+    assert.equal(mockDevVideo.muted, true);
+    assert.equal(mockCatVideo.muted, true);
   });
 
-  it('should loop coding phase seamlessly at 3.45s boundary without jumping into cat phase', () => {
-    const mockVideo = {
-      currentTime: 3.48,
+  it('should loop coding phase seamlessly at 2.85s boundary without jumping into coffee', () => {
+    const mockDevVideo = {
+      currentTime: 2.88,
       play: async () => {},
     };
     const studio = new LivingVideoStudio(null);
-    studio.videoEl = mockVideo;
+    studio.devVideoEl = mockDevVideo;
     studio.phase = VideoPhase.CODING;
 
-    studio.handleTimeUpdate();
-    assert.equal(mockVideo.currentTime, 0.05);
+    studio.handleDevTimeUpdate();
+    assert.equal(mockDevVideo.currentTime, 0.05);
+  });
+
+  it('should loop cat sleep phase seamlessly at 1.85s boundary without jumping into wake', () => {
+    const mockCatVideo = {
+      currentTime: 1.88,
+      play: async () => {},
+    };
+    const studio = new LivingVideoStudio(null);
+    studio.catVideoEl = mockCatVideo;
+    studio.catPhase = 'SLEEP';
+
+    studio.handleCatTimeUpdate();
+    assert.equal(mockCatVideo.currentTime, 0.05);
   });
 });

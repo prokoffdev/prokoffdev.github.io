@@ -1,11 +1,11 @@
 import { ContentPanel } from '../ui/ContentPanel.js';
 
 export const VideoPhase = Object.freeze({
-  CODING: 'CODING',       // 0.0s - 3.5s (ambient coding loop: pure typing, locked tripod camera)
-  CAT_REACT: 'CAT_REACT', // 3.5s - 6.5s (cat wake & pet: stretches, glowing cyan LED eyes, wags tail, curls back to sleep)
-  COFFEE: 'COFFEE',       // 6.5s - 10.0s (Oleg reaches for mug on desk, takes sip, puts back down)
-  BUILD: 'BUILD',         // 10.0s - 13.0s (holographic globe spins with glowing cyber grid & tech stack)
-  RELAX: 'RELAX',         // success & developer profile
+  CODING: 'CODING',       // 0.0s - 2.85s (ambient coding loop: pure typing, locked tripod camera)
+  CAT_REACT: 'CAT_REACT', // 1.9s - 8.0s (cat wakes up, glowing blue LED eyes, stretches, sits upright alert)
+  COFFEE: 'COFFEE',       // 2.9s - 6.9s (Oleg reaches for DEV mug on desk, takes sip, puts back down)
+  BUILD: 'BUILD',         // compilation / opening projects
+  RELAX: 'RELAX',         // developer profile / about me
 });
 
 export class LivingVideoStudio {
@@ -18,17 +18,31 @@ export class LivingVideoStudio {
     this.container = container;
     this.options = options;
     this.phase = VideoPhase.CODING;
-    this.videoEl = null;
+    this.catPhase = 'SLEEP'; // 'SLEEP' | 'WAKE' | 'ALERT'
+    
+    // Video elements
+    this.devVideoEl = null;
+    this.catVideoEl = null;
+    this.videoEl = null; // Alias to devVideoEl for backward compatibility
+
+    // Overlays & HUD
+    this.devOverlayEl = null;
+    this.catOverlayEl = null;
     this.overlayEl = null;
     this.hudEl = null;
     this.toastEl = null;
     this.contentPanel = null;
+
     this.isMuted = true;
     this.toastTimeout = null;
     this.pendingModal = null;
-    this.frameCallbackId = null;
-    this.boundTimeUpdate = this.handleTimeUpdate.bind(this);
-    this.boundFrameCheck = this.handleFrameCheck.bind(this);
+    this.devFrameCallbackId = null;
+    this.catFrameCallbackId = null;
+
+    this.boundDevTimeUpdate = this.handleDevTimeUpdate.bind(this);
+    this.boundCatTimeUpdate = this.handleCatTimeUpdate.bind(this);
+    this.boundDevFrameCheck = this.handleDevFrameCheck.bind(this);
+    this.boundCatFrameCheck = this.handleCatFrameCheck.bind(this);
 
     this.init();
   }
@@ -37,110 +51,230 @@ export class LivingVideoStudio {
     if (!this.container || typeof document === 'undefined') return;
 
     this.container.innerHTML = '';
-    this.container.className = 'living-studio-container';
+    this.container.className = 'living-studio-container split-cockpit-layout';
 
-    // 1. Video Element
-    this.videoEl = document.createElement('video');
-    this.videoEl.className = 'living-studio-video';
-    this.videoEl.autoplay = true;
-    this.videoEl.muted = true;
-    this.videoEl.loop = false; // We handle custom phase looping
-    this.videoEl.playsInline = true;
-    this.videoEl.setAttribute('playsinline', '');
-    this.videoEl.setAttribute('webkit-playsinline', '');
-    this.videoEl.poster = 'assets/video/studio_poster.jpg';
-    this.videoEl.preload = 'auto';
+    // Top Global HUD (Audio, Mode Toggle, Profile quicklink)
+    this.createGlobalHud();
 
-    // WebM primary, MP4 fallback
-    const sourceWebM = document.createElement('source');
-    sourceWebM.src = 'assets/video/studio_living.webm';
-    sourceWebM.type = 'video/webm';
+    // Main Cockpit Grid Wrapper
+    const gridWrapper = document.createElement('div');
+    gridWrapper.className = 'cockpit-grid-wrapper';
 
-    const sourceMP4 = document.createElement('source');
-    sourceMP4.src = 'assets/video/studio_living.mp4';
-    sourceMP4.type = 'video/mp4';
+    // 1. LEFT COLUMN: Developer Workstation (16:9 video + Bottom Console HUD)
+    const devCol = document.createElement('div');
+    devCol.className = 'cockpit-col cockpit-col-dev';
 
-    this.videoEl.appendChild(sourceWebM);
-    this.videoEl.appendChild(sourceMP4);
-    this.container.appendChild(this.videoEl);
+    const devVideoWrapper = document.createElement('div');
+    devVideoWrapper.className = 'cockpit-video-box dev-video-box';
 
-    // 2. Interactive Hotspot Overlay
-    this.overlayEl = document.createElement('div');
-    this.overlayEl.className = 'living-studio-overlay';
-    this.createHotspots();
-    this.container.appendChild(this.overlayEl);
+    this.devVideoEl = document.createElement('video');
+    this.devVideoEl.className = 'living-studio-video dev-video';
+    this.devVideoEl.autoplay = true;
+    this.devVideoEl.muted = true;
+    this.devVideoEl.loop = false;
+    this.devVideoEl.playsInline = true;
+    this.devVideoEl.setAttribute('playsinline', '');
+    this.devVideoEl.setAttribute('webkit-playsinline', '');
+    this.devVideoEl.poster = 'assets/video/studio_dev_poster.jpg';
+    this.devVideoEl.preload = 'auto';
 
-    // 3. HUD Bar
-    this.createHud();
+    const devWebm = document.createElement('source');
+    devWebm.src = 'assets/video/studio_dev.webm';
+    devWebm.type = 'video/webm';
 
-    // 4. Toast Notification
+    const devMp4 = document.createElement('source');
+    devMp4.src = 'assets/video/studio_dev.mp4';
+    devMp4.type = 'video/mp4';
+
+    this.devVideoEl.appendChild(devWebm);
+    this.devVideoEl.appendChild(devMp4);
+    devVideoWrapper.appendChild(this.devVideoEl);
+
+    // Overlay for Developer Hotspots
+    this.devOverlayEl = document.createElement('div');
+    this.devOverlayEl.className = 'living-studio-overlay dev-overlay';
+    this.createDevHotspots();
+    devVideoWrapper.appendChild(this.devOverlayEl);
+
+    // Badge
+    const devBadge = document.createElement('div');
+    devBadge.className = 'cockpit-badge dev-badge';
+    devBadge.innerHTML = '<span class=\"badge-dot live\"></span> OLEG // LEAD DEV WORKSTATION';
+    devVideoWrapper.appendChild(devBadge);
+
+    devCol.appendChild(devVideoWrapper);
+
+    // Dev Cockpit Console HUD (Directly beneath 16:9 video)
+    const consoleHud = this.createConsoleHud();
+    devCol.appendChild(consoleHud);
+
+    gridWrapper.appendChild(devCol);
+
+    // 2. RIGHT COLUMN: Robo-Cat Companion Terminal (9:16 vertical stream)
+    const catCol = document.createElement('div');
+    catCol.className = 'cockpit-col cockpit-col-cat';
+
+    const catVideoWrapper = document.createElement('div');
+    catVideoWrapper.className = 'cockpit-video-box cat-video-box';
+
+    this.catVideoEl = document.createElement('video');
+    this.catVideoEl.className = 'living-studio-video cat-video';
+    this.catVideoEl.autoplay = true;
+    this.catVideoEl.muted = true;
+    this.catVideoEl.loop = false;
+    this.catVideoEl.playsInline = true;
+    this.catVideoEl.setAttribute('playsinline', '');
+    this.catVideoEl.setAttribute('webkit-playsinline', '');
+    this.catVideoEl.poster = 'assets/video/studio_cat_poster.jpg';
+    this.catVideoEl.preload = 'auto';
+
+    const catWebm = document.createElement('source');
+    catWebm.src = 'assets/video/studio_cat.webm';
+    catWebm.type = 'video/webm';
+
+    const catMp4 = document.createElement('source');
+    catMp4.src = 'assets/video/studio_cat.mp4';
+    catMp4.type = 'video/mp4';
+
+    this.catVideoEl.appendChild(catWebm);
+    this.catVideoEl.appendChild(catMp4);
+    catVideoWrapper.appendChild(this.catVideoEl);
+
+    // Overlay for Cat Hotspots
+    this.catOverlayEl = document.createElement('div');
+    this.catOverlayEl.className = 'living-studio-overlay cat-overlay';
+    this.createCatHotspots();
+    catVideoWrapper.appendChild(this.catOverlayEl);
+
+    // Badge
+    const catBadge = document.createElement('div');
+    catBadge.className = 'cockpit-badge cat-badge';
+    catBadge.innerHTML = '<span class=\"badge-dot cyan\"></span> NEOW-11 // AI AGENT DOCK';
+    catVideoWrapper.appendChild(catBadge);
+
+    // Cat Quick Action Floating Buttons
+    const catActions = document.createElement('div');
+    catActions.className = 'cat-floating-actions';
+    
+    const petCatBtn = document.createElement('button');
+    petCatBtn.className = 'cat-quick-btn';
+    petCatBtn.innerHTML = '🐱 Погладить';
+    petCatBtn.addEventListener('click', () => this.triggerCat());
+
+    const askAiBtn = document.createElement('button');
+    askAiBtn.className = 'cat-quick-btn';
+    askAiBtn.innerHTML = '🤖 Спросить AI';
+    askAiBtn.addEventListener('click', () => this.contentPanel.open('assistant-help'));
+
+    catActions.appendChild(petCatBtn);
+    catActions.appendChild(askAiBtn);
+    catVideoWrapper.appendChild(catActions);
+
+    catCol.appendChild(catVideoWrapper);
+    gridWrapper.appendChild(catCol);
+
+    this.container.appendChild(gridWrapper);
+
+    // Alias for backward compatibility
+    this.videoEl = this.devVideoEl;
+    this.overlayEl = this.devOverlayEl;
+
+    // Toast Notification Element
     this.toastEl = document.createElement('div');
     this.toastEl.className = 'living-studio-toast';
     this.container.appendChild(this.toastEl);
 
-    // 5. Shared ContentPanel
+    // Shared ContentPanel Modal
     this.contentPanel = new ContentPanel(this.container, {
       onClose: () => {
-        // Return to active coding loop on modal close
         if (this.phase === VideoPhase.RELAX || this.phase === VideoPhase.BUILD) {
           this.playCodingLoop();
         }
       },
     });
 
-    // 6. Event Listeners
-    this.videoEl.addEventListener('timeupdate', this.boundTimeUpdate);
-    this.startFrameLoop();
+    // Event Listeners for Video Loops
+    this.devVideoEl.addEventListener('timeupdate', this.boundDevTimeUpdate);
+    this.catVideoEl.addEventListener('timeupdate', this.boundCatTimeUpdate);
+    this.startFrameLoops();
 
-    // Initial play trigger
-    this.videoEl.play().catch(() => {
-      // Autoplay with muted fallback
-      this.videoEl.muted = true;
-      this.videoEl.play().catch(() => {});
-    });
+    // Initial Play
+    this.devVideoEl.play().catch(() => {});
+    this.catVideoEl.play().catch(() => {});
   }
 
-  createHotspots() {
+  createDevHotspots() {
     const hotspots = [
       {
-        id: 'hotspot-coffee',
-        label: '☕ Выпить кофе',
-        style: { left: '70.3%', top: '37.3%', width: '4.2%', height: '8.5%' },
-        action: () => this.triggerCoffee(),
+        id: 'hotspot-dev-window',
+        label: '🌆 Дождливый Нео-Токио (Звуки города)',
+        style: { left: '2.0%', top: '2.0%', width: '36.0%', height: '48.0%' },
+        action: () => {
+          this.toggleSound();
+          this.showToast('🌆 Санкт-Петербург / Нео-Токио • За окном дождь, в терминале чистый код');
+        },
       },
       {
-        id: 'hotspot-monitors',
-        label: '🚀 Проекты & Билд',
-        style: { left: '52.0%', top: '14.0%', width: '17.5%', height: '22.0%' },
+        id: 'hotspot-dev-monitors',
+        label: '🚀 Проекты & Репозитории',
+        style: { left: '38.0%', top: '22.0%', width: '42.0%', height: '44.0%' },
         action: () => this.triggerBuild('projects'),
       },
       {
-        id: 'hotspot-oleg',
+        id: 'hotspot-dev-oleg',
         label: '👤 Олег (Обо мне)',
-        style: { left: '49.0%', top: '23.5%', width: '10.0%', height: '37.5%' },
+        style: { left: '2.0%', top: '22.0%', width: '36.0%', height: '76.0%' },
         action: () => this.triggerRelax(),
       },
       {
-        id: 'hotspot-cat',
-        label: '🐱 Погладить робо-кота',
-        style: { left: '33.5%', top: '65.0%', width: '12.5%', height: '23.5%' },
-        action: () => this.triggerCat(),
+        id: 'hotspot-dev-coffee',
+        label: '☕ Выпить кофе DEV',
+        style: { left: '60.0%', top: '64.0%', width: '15.0%', height: '26.0%' },
+        action: () => this.triggerCoffee(),
       },
       {
-        id: 'hotspot-window',
-        label: '🌆 Окно в город',
-        style: { left: '21.0%', top: '4.8%', width: '11.8%', height: '27.0%' },
-        action: () => this.showToast('🌆 Санкт-Петербург • Киберпанк-вечер • Код пишется без остановки'),
-      },
-      {
-        id: 'hotspot-hologram',
-        label: '🌐 Стек технологий',
-        style: { left: '87.0%', top: '30.0%', width: '8.0%', height: '20.5%' },
+        id: 'hotspot-dev-pc',
+        label: '⚡ Стек технологий (RGB Rig)',
+        style: { left: '80.0%', top: '24.0%', width: '19.0%', height: '65.0%' },
         action: () => this.triggerHologram('skills'),
       },
     ];
 
-    hotspots.forEach((h) => {
+    this.mountHotspots(this.devOverlayEl, hotspots);
+  }
+
+  createCatHotspots() {
+    const hotspots = [
+      {
+        id: 'hotspot-cat-body',
+        label: '🐱 Погладить NEOW-11',
+        style: { left: '8.0%', top: '30.0%', width: '84.0%', height: '52.0%' },
+        action: () => this.triggerCat(),
+      },
+      {
+        id: 'hotspot-cat-ai',
+        label: '🤖 AI Боты & Автоматизации',
+        style: { left: '52.0%', top: '5.0%', width: '46.0%', height: '40.0%' },
+        action: () => {
+          this.showToast('🤖 Нейросетевой хаб: Чат-боты, парсеры и AI агенты готовы к работе');
+          this.contentPanel.open('assistant-help');
+        },
+      },
+      {
+        id: 'hotspot-cat-dock',
+        label: '⚡ Магнитная док-станция',
+        style: { left: '8.0%', top: '72.0%', width: '84.0%', height: '22.0%' },
+        action: () => {
+          this.showToast('⚡ Док-станция активна • Батарея NEOW-11: 100% • Все системы в норме');
+        },
+      },
+    ];
+
+    this.mountHotspots(this.catOverlayEl, hotspots);
+  }
+
+  mountHotspots(container, list) {
+    list.forEach((h) => {
       const el = document.createElement('div');
       el.className = `living-hotspot ${h.id}`;
       Object.assign(el.style, h.style);
@@ -169,29 +303,18 @@ export class LivingVideoStudio {
         }
       });
 
-      this.overlayEl.appendChild(el);
+      container.appendChild(el);
     });
   }
 
-  createHud() {
+  createGlobalHud() {
     this.hudEl = document.createElement('div');
     this.hudEl.className = 'living-studio-hud';
 
-    // Left Action Pills
-    const actions = document.createElement('div');
-    actions.className = 'living-hud-actions';
+    const leftTitle = document.createElement('div');
+    leftTitle.className = 'living-hud-title';
+    leftTitle.innerHTML = '⚡ CYBERPUNK DUAL-STUDIO // <span class=\"text-cyan\">LIVE WORKSPACE</span>';
 
-    const coffeeBtn = this.createHudButton('☕ Кофе', () => this.triggerCoffee());
-    const buildBtn = this.createHudButton('🚀 Билд & Проекты', () => this.triggerBuild());
-    const profileBtn = this.createHudButton('👤 Обо мне', () => this.triggerRelax());
-    const catBtn = this.createHudButton('🐱 Спросить кота', () => this.triggerCat());
-
-    actions.appendChild(coffeeBtn);
-    actions.appendChild(buildBtn);
-    actions.appendChild(profileBtn);
-    actions.appendChild(catBtn);
-
-    // Right Controls
     const controls = document.createElement('div');
     controls.className = 'living-hud-controls';
 
@@ -203,150 +326,240 @@ export class LivingVideoStudio {
     this.soundBtn.addEventListener('click', () => this.toggleSound());
     controls.appendChild(this.soundBtn);
 
-    // Mode Switcher (Optionally toggle to Phaser 2.5D Canvas)
+    // 2.5D Canvas toggle
     if (typeof this.options.onSwitchMode === 'function') {
       const modeBtn = document.createElement('button');
       modeBtn.className = 'living-hud-btn living-hud-btn-mode';
       modeBtn.innerHTML = '🎮 2.5D Холст';
-      modeBtn.setAttribute('title', 'Переключить в режим интерактивной комнаты');
+      modeBtn.setAttribute('title', 'Переключить в режим изометрической комнаты');
       modeBtn.addEventListener('click', () => this.options.onSwitchMode());
       controls.appendChild(modeBtn);
     }
 
-    this.hudEl.appendChild(actions);
+    this.hudEl.appendChild(leftTitle);
     this.hudEl.appendChild(controls);
     this.container.appendChild(this.hudEl);
   }
 
+  createConsoleHud() {
+    const bar = document.createElement('div');
+    bar.className = 'cockpit-console-hud';
+
+    const actions = document.createElement('div');
+    actions.className = 'console-hud-actions';
+
+    const coffeeBtn = this.createHudButton('☕ Выпить кофе', () => this.triggerCoffee());
+    const buildBtn = this.createHudButton('🚀 Проекты', () => this.triggerBuild('projects'));
+    const stackBtn = this.createHudButton('⚡ Стек технологий', () => this.triggerHologram('skills'));
+    const profileBtn = this.createHudButton('👤 Обо мне', () => this.triggerRelax());
+    const contactBtn = this.createHudButton('📬 Контакты', () => this.contentPanel.open('contacts'));
+
+    actions.appendChild(coffeeBtn);
+    actions.appendChild(buildBtn);
+    actions.appendChild(stackBtn);
+    actions.appendChild(profileBtn);
+    actions.appendChild(contactBtn);
+
+    const diagnostics = document.createElement('div');
+    diagnostics.className = 'console-hud-diag';
+    diagnostics.innerHTML = `
+      <div class="diag-item"><span class="diag-label">SYSTEM:</span> <span class="diag-val cyan">READY</span></div>
+      <div class="diag-item"><span class="diag-label">IDE:</span> <span class="diag-val">ACTIVE</span></div>
+      <div class="diag-item"><span class="diag-label">COMPANION:</span> <span class="diag-val pink">NEOW-11 CONNECTED</span></div>
+    `;
+
+    bar.appendChild(actions);
+    bar.appendChild(diagnostics);
+    return bar;
+  }
+
   createHudButton(text, onClick) {
     const btn = document.createElement('button');
-    btn.className = 'living-hud-btn';
+    btn.className = 'console-hud-btn';
     btn.textContent = text;
     btn.addEventListener('click', onClick);
     return btn;
   }
 
-  startFrameLoop() {
-    if (!this.videoEl || typeof window === 'undefined') return;
-    const loop = () => {
-      this.handleFrameCheck();
-      if (!this.videoEl) return;
-      if ('requestVideoFrameCallback' in this.videoEl) {
-        this.frameCallbackId = this.videoEl.requestVideoFrameCallback(loop);
+  startFrameLoops() {
+    if (typeof window === 'undefined') return;
+
+    const devLoop = () => {
+      this.handleDevFrameCheck();
+      if (!this.devVideoEl) return;
+      if ('requestVideoFrameCallback' in this.devVideoEl) {
+        this.devFrameCallbackId = this.devVideoEl.requestVideoFrameCallback(devLoop);
       } else if (typeof requestAnimationFrame !== 'undefined') {
-        this.frameCallbackId = requestAnimationFrame(loop);
+        this.devFrameCallbackId = requestAnimationFrame(devLoop);
       }
     };
-    if ('requestVideoFrameCallback' in this.videoEl) {
-      this.frameCallbackId = this.videoEl.requestVideoFrameCallback(loop);
-    } else if (typeof requestAnimationFrame !== 'undefined') {
-      this.frameCallbackId = requestAnimationFrame(loop);
+
+    if (this.devVideoEl) {
+      if ('requestVideoFrameCallback' in this.devVideoEl) {
+        this.devFrameCallbackId = this.devVideoEl.requestVideoFrameCallback(devLoop);
+      } else if (typeof requestAnimationFrame !== 'undefined') {
+        this.devFrameCallbackId = requestAnimationFrame(devLoop);
+      }
+    }
+
+    const catLoop = () => {
+      this.handleCatFrameCheck();
+      if (!this.catVideoEl) return;
+      if ('requestVideoFrameCallback' in this.catVideoEl) {
+        this.catFrameCallbackId = this.catVideoEl.requestVideoFrameCallback(catLoop);
+      } else if (typeof requestAnimationFrame !== 'undefined') {
+        this.catFrameCallbackId = requestAnimationFrame(catLoop);
+      }
+    };
+
+    if (this.catVideoEl) {
+      if ('requestVideoFrameCallback' in this.catVideoEl) {
+        this.catFrameCallbackId = this.catVideoEl.requestVideoFrameCallback(catLoop);
+      } else if (typeof requestAnimationFrame !== 'undefined') {
+        this.catFrameCallbackId = requestAnimationFrame(catLoop);
+      }
     }
   }
 
-  handleFrameCheck() {
-    if (!this.videoEl) return;
-    const t = this.videoEl.currentTime;
+  handleDevFrameCheck() {
+    if (!this.devVideoEl) return;
+    const t = this.devVideoEl.currentTime;
 
     switch (this.phase) {
       case VideoPhase.CODING:
-        // Seamless loop before reaching cat segment boundary at 3.5s
-        if (t >= 3.45) {
-          this.videoEl.currentTime = 0.05;
-        }
-        break;
-
-      case VideoPhase.CAT_REACT:
-        // Cat reaction completes cleanly at 6.45s and returns to typing
-        if (t >= 6.45) {
-          this.playCodingLoop();
-          this.contentPanel.open('assistant-help');
+        // Seamless loop of pure typing before reaching coffee segment
+        if (t >= 2.85) {
+          this.devVideoEl.currentTime = 0.05;
         }
         break;
 
       case VideoPhase.COFFEE:
-        // Oleg drinks coffee from 6.5s to 10.0s, puts mug back on desk, returns to typing
-        if (t >= 9.95) {
+        // Coffee sip plays from 2.9s to 6.9s, then returns to typing
+        if (t >= 6.85) {
           this.playCodingLoop();
         }
         break;
 
       case VideoPhase.BUILD:
-        // Holographic globe spins from 10.0s to 13.0s
-        if (t >= 12.95) {
-          this.playCodingLoop();
-          const target = this.pendingModal || 'projects';
-          this.pendingModal = null;
-          this.contentPanel.open(target);
+        if (t >= 2.85) {
+          this.devVideoEl.currentTime = 0.05;
+        }
+        break;
+
+      case VideoPhase.RELAX:
+        if (t >= 2.85) {
+          this.devVideoEl.currentTime = 0.05;
         }
         break;
     }
   }
 
+  handleCatFrameCheck() {
+    if (!this.catVideoEl) return;
+    const t = this.catVideoEl.currentTime;
+
+    if (this.catPhase === 'SLEEP') {
+      // Cat sleeping on dock: loops 0.05s to 1.85s
+      if (t >= 1.85) {
+        this.catVideoEl.currentTime = 0.05;
+      }
+    } else if (this.catPhase === 'WAKE') {
+      // Cat waking up & stretching alert (1.9s to 8.0s)
+      if (t >= 7.95) {
+        this.catPhase = 'ALERT';
+      }
+    } else if (this.catPhase === 'ALERT') {
+      // Loop alert companion breathing (7.5s to 9.95s)
+      if (t >= 9.90) {
+        this.catVideoEl.currentTime = 7.50;
+      }
+    }
+  }
+
+  handleDevTimeUpdate() {
+    this.handleDevFrameCheck();
+  }
+
+  handleCatTimeUpdate() {
+    this.handleCatFrameCheck();
+  }
+
+  // Alias for backward compatibility in test suites
   handleTimeUpdate() {
-    this.handleFrameCheck();
+    this.handleDevFrameCheck();
+    this.handleCatFrameCheck();
   }
 
   playCodingLoop() {
     this.phase = VideoPhase.CODING;
-    if (!this.videoEl) return;
-    this.videoEl.currentTime = 0.05;
-    this.videoEl.play().catch(() => {});
+    if (!this.devVideoEl) return;
+    this.devVideoEl.currentTime = 0.05;
+    this.devVideoEl.play().catch(() => {});
   }
 
   triggerCoffee() {
     this.phase = VideoPhase.COFFEE;
-    this.showToast('☕ Кофе заварен: Олег берет кружку со стола, делает глоток и возвращается к коду');
-    if (!this.videoEl) return;
-    this.videoEl.currentTime = 6.52;
-    this.videoEl.play().catch(() => {});
+    this.showToast('☕ Олег берет кружку DEV со стола, делает глоток кофе и возвращается к коду');
+    if (!this.devVideoEl) return;
+    this.devVideoEl.currentTime = 2.90;
+    this.devVideoEl.play().catch(() => {});
   }
 
   triggerBuild(target = 'projects') {
     this.phase = VideoPhase.BUILD;
     this.pendingModal = target;
-    this.showToast('🚀 Запуск компиляции: Голограмма проектов активна, билд успешен!');
-    if (!this.videoEl) return;
-    this.videoEl.currentTime = 10.02;
-    this.videoEl.play().catch(() => {});
+    this.showToast('🚀 Компиляция проектов: Сборка Vite успешна, тесты пройдены!');
+    if (this.contentPanel) {
+      this.contentPanel.open(target);
+    }
   }
 
   triggerHologram(target = 'skills') {
     this.phase = VideoPhase.BUILD;
     this.pendingModal = target;
-    this.showToast('🌐 Голографический процессор: React, TypeScript, Node.js, WebGL');
-    if (!this.videoEl) return;
-    this.videoEl.currentTime = 10.02;
-    this.videoEl.play().catch(() => {});
+    this.showToast('⚡ Стек технологий: React, TypeScript, Node.js, WebGL & AI');
+    if (this.contentPanel) {
+      this.contentPanel.open(target);
+    }
   }
 
   triggerRelax() {
     this.phase = VideoPhase.RELAX;
-    this.showToast('🧘 Все задачи закрыты! Олег отдыхает и готов к новым вызовам');
-    this.contentPanel.open('about');
+    this.showToast('👤 Разработчик Олег: Профиль, опыт и выполненные проекты');
+    if (this.contentPanel) {
+      this.contentPanel.open('about');
+    }
   }
 
   triggerCat() {
-    this.phase = VideoPhase.CAT_REACT;
-    this.showToast('🐱 Мурр! Робо-кот потягивается, открывает глаза и мурлычет');
-    if (!this.videoEl) return;
-    this.videoEl.currentTime = 3.52;
-    this.videoEl.play().catch(() => {});
+    this.catPhase = 'WAKE';
+    this.showToast('🐱 NEOW-11 просыпается, синие LED глаза активируются! Робо-кот готов помочь');
+    if (!this.catVideoEl) return;
+    this.catVideoEl.currentTime = 1.90;
+    this.catVideoEl.play().catch(() => {});
   }
 
   toggleSound() {
-    if (!this.videoEl) return;
     this.isMuted = !this.isMuted;
-    this.videoEl.muted = this.isMuted;
-    if (!this.isMuted) {
-      this.videoEl.volume = 1.0;
-      this.videoEl.play().catch(() => {});
+    if (this.devVideoEl) {
+      this.devVideoEl.muted = this.isMuted;
+      if (!this.isMuted) {
+        this.devVideoEl.volume = 0.8;
+        this.devVideoEl.play().catch(() => {});
+      }
+    }
+    if (this.catVideoEl) {
+      this.catVideoEl.muted = this.isMuted;
+      if (!this.isMuted) {
+        this.catVideoEl.volume = 0.5;
+        this.catVideoEl.play().catch(() => {});
+      }
     }
     if (this.soundBtn) {
       this.soundBtn.innerHTML = this.isMuted ? '🔇' : '🔊';
       this.soundBtn.setAttribute('title', this.isMuted ? 'Включить звук студии' : 'Выключить звук студии');
     }
-    this.showToast(this.isMuted ? '🔇 Звук студии выключен' : '🔊 Звук студии включен (эмбиент клавиш и студии)');
+    this.showToast(this.isMuted ? '🔇 Звук выключен' : '🔊 Звук включен (дождь за окном, клавиатура и кибер-студия)');
   }
 
   showToast(message) {
@@ -359,22 +572,35 @@ export class LivingVideoStudio {
 
     this.toastTimeout = setTimeout(() => {
       this.toastEl.classList.remove('is-visible');
-    }, 2800);
+    }, 3000);
   }
 
   destroy() {
-    if (this.frameCallbackId && this.videoEl) {
-      if ('cancelVideoFrameCallback' in this.videoEl) {
-        this.videoEl.cancelVideoFrameCallback(this.frameCallbackId);
+    if (this.devFrameCallbackId && this.devVideoEl) {
+      if ('cancelVideoFrameCallback' in this.devVideoEl) {
+        this.devVideoEl.cancelVideoFrameCallback(this.devFrameCallbackId);
       } else if (typeof cancelAnimationFrame !== 'undefined') {
-        cancelAnimationFrame(this.frameCallbackId);
+        cancelAnimationFrame(this.devFrameCallbackId);
       }
-      this.frameCallbackId = null;
+      this.devFrameCallbackId = null;
     }
-    if (this.videoEl) {
-      this.videoEl.removeEventListener('timeupdate', this.boundTimeUpdate);
-      this.videoEl.pause();
-      this.videoEl.src = '';
+    if (this.catFrameCallbackId && this.catVideoEl) {
+      if ('cancelVideoFrameCallback' in this.catVideoEl) {
+        this.catVideoEl.cancelVideoFrameCallback(this.catFrameCallbackId);
+      } else if (typeof cancelAnimationFrame !== 'undefined') {
+        cancelAnimationFrame(this.catFrameCallbackId);
+      }
+      this.catFrameCallbackId = null;
+    }
+    if (this.devVideoEl) {
+      this.devVideoEl.removeEventListener('timeupdate', this.boundDevTimeUpdate);
+      this.devVideoEl.pause();
+      this.devVideoEl.src = '';
+    }
+    if (this.catVideoEl) {
+      this.catVideoEl.removeEventListener('timeupdate', this.boundCatTimeUpdate);
+      this.catVideoEl.pause();
+      this.catVideoEl.src = '';
     }
     if (this.contentPanel) {
       this.contentPanel.close();

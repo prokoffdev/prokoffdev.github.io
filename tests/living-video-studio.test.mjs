@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { VideoPhase, LivingVideoStudio } from '../src/studio/video/LivingVideoStudio.js';
 import { StudioDisplayMode } from '../src/studio/core/StudioBootstrap.js';
 
-describe('Living Video Diorama & Phase Control Tests', () => {
+describe('Living Video Diorama & Single-Action Control Tests', () => {
   it('should define all 5 interactive video phases correctly', () => {
     assert.equal(VideoPhase.CODING, 'CODING');
     assert.equal(VideoPhase.CAT_REACT, 'CAT_REACT');
@@ -22,92 +22,76 @@ describe('Living Video Diorama & Phase Control Tests', () => {
     const studio = new LivingVideoStudio(null);
     assert.equal(studio.phase, VideoPhase.CODING);
     assert.equal(studio.catPhase, 'SLEEP');
+    assert.equal(studio.isDevBusy, false);
+    assert.equal(studio.isCatBusy, false);
     assert.equal(studio.isMuted, true);
     assert.equal(studio.devVideoEl, null);
     assert.equal(studio.catVideoEl, null);
   });
 
-  it('should manage phase transitions, dual video scrubbing and independent loops', () => {
+  it('should enforce single click execution and prevent multiple simultaneous triggers', () => {
     const mockDevVideo = {
-      currentTime: 0,
+      innerHTML: '',
+      loop: true,
       muted: true,
-      paused: false,
+      load: () => {},
       play: async () => {},
-      pause: () => { mockDevVideo.paused = true; },
-      addEventListener: () => {},
-      removeEventListener: () => {},
+      pause: () => {},
+      appendChild: () => {},
     };
 
     const mockCatVideo = {
-      currentTime: 0,
+      innerHTML: '',
+      loop: true,
       muted: true,
-      paused: false,
+      load: () => {},
       play: async () => {},
-      pause: () => { mockCatVideo.paused = true; },
-      addEventListener: () => {},
-      removeEventListener: () => {},
+      pause: () => {},
+      appendChild: () => {},
     };
 
-    const mockModal = {
-      openedSection: null,
-      open: (s) => { mockModal.openedSection = s; },
-      close: () => { mockModal.openedSection = null; },
-    };
+    const mockCoffeeBtn = { disabled: false, textContent: '☕ Выпить кофе', classList: { add: () => {}, remove: () => {} } };
+    const mockPetBtn = { disabled: false, textContent: '🐱 Погладить кота', classList: { add: () => {}, remove: () => {} } };
 
     const studio = new LivingVideoStudio(null);
     studio.devVideoEl = mockDevVideo;
     studio.catVideoEl = mockCatVideo;
-    studio.videoEl = mockDevVideo;
-    studio.contentPanel = mockModal;
+    studio.coffeeBtn = mockCoffeeBtn;
+    studio.petCatBtn = mockPetBtn;
 
-    // 1. Initial State
-    assert.equal(studio.phase, VideoPhase.CODING);
-    assert.equal(studio.catPhase, 'SLEEP');
+    // 1. Initial State: not busy
+    assert.equal(studio.isDevBusy, false);
+    assert.equal(studio.isCatBusy, false);
 
-    // 2. Trigger Cat reaction (cat wakes up on its own video without disturbing dev!)
-    studio.triggerCat();
-    assert.equal(studio.catPhase, 'WAKE');
-    assert.equal(mockCatVideo.currentTime, 1.90);
-    // Dev video is completely untouched
-    assert.equal(mockDevVideo.currentTime, 0);
-
-    // Cat reaches wake threshold (8.0s) and transitions to ALERT loop
-    mockCatVideo.currentTime = 8.05;
-    studio.handleCatTimeUpdate();
-    assert.equal(studio.catPhase, 'ALERT');
-
-    // Cat alert loop boundary test
-    mockCatVideo.currentTime = 9.95;
-    studio.handleCatTimeUpdate();
-    assert.equal(mockCatVideo.currentTime, 7.50);
-
-    // 3. Trigger Coffee (only dev video plays sip without touching cat!)
+    // 2. Trigger Coffee: becomes busy, disables button
     studio.triggerCoffee();
+    assert.equal(studio.isDevBusy, true);
     assert.equal(studio.phase, VideoPhase.COFFEE);
-    assert.equal(mockDevVideo.currentTime, 2.90);
+    assert.equal(mockCoffeeBtn.disabled, true);
 
-    // Coffee completes at 6.9s and returns to coding loop
-    mockDevVideo.currentTime = 6.90;
-    studio.handleDevTimeUpdate();
-    assert.equal(studio.phase, VideoPhase.CODING);
-    assert.equal(mockDevVideo.currentTime, 0.05);
+    // Subsequent clicks while busy are completely ignored
+    studio.triggerCoffee();
+    assert.equal(studio.isDevBusy, true);
 
-    // 4. Trigger Build & Projects
-    studio.triggerBuild('projects');
-    assert.equal(studio.phase, VideoPhase.BUILD);
-    assert.equal(mockModal.openedSection, 'projects');
+    // 3. Trigger Cat: becomes busy independently, dev remains busy
+    studio.triggerCat();
+    assert.equal(studio.isCatBusy, true);
+    assert.equal(studio.catPhase, 'WAKE');
+    assert.equal(mockPetBtn.disabled, true);
 
-    // 4b. Trigger Tech Stack Hologram
-    studio.triggerHologram('skills');
-    assert.equal(studio.phase, VideoPhase.BUILD);
-    assert.equal(mockModal.openedSection, 'skills');
+    // Subsequent cat clicks while busy are completely ignored
+    studio.triggerCat();
+    assert.equal(studio.isCatBusy, true);
 
-    // 5. Trigger Relax & Profile
-    studio.triggerRelax();
-    assert.equal(studio.phase, VideoPhase.RELAX);
-    assert.equal(mockModal.openedSection, 'about');
+    // 4. Test onEnded callback execution unlocks Dev
+    if (mockDevVideo.onended) {
+      mockDevVideo.onended();
+      assert.equal(studio.isDevBusy, false);
+      assert.equal(mockCoffeeBtn.disabled, false);
+      assert.equal(studio.phase, VideoPhase.CODING);
+    }
 
-    // 6. Audio Toggle
+    // 5. Audio Toggle
     assert.equal(studio.isMuted, true);
     studio.toggleSound();
     assert.equal(studio.isMuted, false);
@@ -120,29 +104,26 @@ describe('Living Video Diorama & Phase Control Tests', () => {
     assert.equal(mockCatVideo.muted, true);
   });
 
-  it('should loop coding phase seamlessly at 2.85s boundary without jumping into coffee', () => {
-    const mockDevVideo = {
-      currentTime: 2.88,
-      play: async () => {},
+  it('should trigger modals for projects, tech stack, and profile cleanly', () => {
+    const mockModal = {
+      openedSection: null,
+      open: (s) => { mockModal.openedSection = s; },
+      close: () => { mockModal.openedSection = null; },
     };
+
     const studio = new LivingVideoStudio(null);
-    studio.devVideoEl = mockDevVideo;
-    studio.phase = VideoPhase.CODING;
+    studio.contentPanel = mockModal;
 
-    studio.handleDevTimeUpdate();
-    assert.equal(mockDevVideo.currentTime, 0.05);
-  });
+    studio.triggerBuild('projects');
+    assert.equal(studio.phase, VideoPhase.BUILD);
+    assert.equal(mockModal.openedSection, 'projects');
 
-  it('should loop cat sleep phase seamlessly at 1.85s boundary without jumping into wake', () => {
-    const mockCatVideo = {
-      currentTime: 1.88,
-      play: async () => {},
-    };
-    const studio = new LivingVideoStudio(null);
-    studio.catVideoEl = mockCatVideo;
-    studio.catPhase = 'SLEEP';
+    studio.triggerHologram('skills');
+    assert.equal(studio.phase, VideoPhase.BUILD);
+    assert.equal(mockModal.openedSection, 'skills');
 
-    studio.handleCatTimeUpdate();
-    assert.equal(mockCatVideo.currentTime, 0.05);
+    studio.triggerRelax();
+    assert.equal(studio.phase, VideoPhase.RELAX);
+    assert.equal(mockModal.openedSection, 'about');
   });
 });

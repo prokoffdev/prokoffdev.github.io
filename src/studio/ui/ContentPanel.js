@@ -57,6 +57,13 @@ export class ContentPanel {
       e.stopPropagation();
     }, { passive: false });
 
+    // Prevent backdrop touch gestures from scrolling the background document on mobile
+    this.backdropEl.addEventListener('touchmove', (e) => {
+      if (e.target === this.backdropEl) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+
     // Mount to document.body for true fixed viewport overlay (avoids container overflow clipping)
     const targetParent = (typeof document !== 'undefined' && document.body) ? document.body : this.mountContainer;
     if (targetParent) {

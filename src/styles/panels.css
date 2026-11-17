@@ -4,8 +4,14 @@
 .studio-modal-backdrop {
   position: fixed !important;
   inset: 0 !important;
-  width: 100vw !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
   height: 100vh !important;
+  height: 100dvh !important;
   background: rgba(6, 9, 15, 0.82) !important;
   -webkit-backdrop-filter: blur(10px) !important;
   backdrop-filter: blur(10px) !important;
@@ -32,6 +38,7 @@
   width: 100% !important;
   max-width: 560px !important;
   max-height: min(84vh, 720px) !important;
+  max-height: min(84dvh, 720px) !important;
   background: #0d121c !important;
   border: 1px solid rgba(0, 229, 255, 0.3) !important;
   border-radius: 20px !important;
@@ -351,7 +358,7 @@
   background: linear-gradient(135deg, rgba(0, 229, 255, 0.25) 0%, rgba(2, 132, 199, 0.3) 100%);
   border: 1px solid rgba(0, 229, 255, 0.5);
   border-radius: 12px;
-  padding: 12px 18px;
+  padding: 13px 18px;
   color: #fff;
   font-size: 13.5px;
   font-weight: 700;
@@ -363,7 +370,9 @@
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 4px 18px rgba(0, 229, 255, 0.2);
-  margin-top: 4px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  flex-shrink: 0 !important;
 }
 
 .studio-cta-btn:hover {
@@ -377,20 +386,35 @@
 /* Mobile responsive bottom drawer */
 @media (max-width: 768px) {
   .studio-modal-backdrop {
+    display: flex !important;
     align-items: flex-end !important;
+    justify-content: center !important;
     padding: 0 !important;
+    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+    box-sizing: border-box !important;
   }
 
   .studio-panel {
+    width: 100% !important;
     max-width: 100% !important;
-    max-height: 88vh !important;
+    max-height: 84dvh !important;
+    max-height: min(84dvh, calc(100svh - 48px)) !important;
     border-bottom-left-radius: 0 !important;
     border-bottom-right-radius: 0 !important;
-    padding-bottom: max(16px, env(safe-area-inset-bottom)) !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
     transform: translateY(100%) !important;
   }
 
   .studio-modal-backdrop.is-open .studio-panel {
     transform: translateY(0) !important;
+  }
+
+  .studio-panel-body {
+    padding: 16px 18px !important;
+    /* Generous bottom padding inside scroll container so CTA buttons are never cut off by Safari URL bar or home bar */
+    padding-bottom: calc(84px + env(safe-area-inset-bottom, 16px)) !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
   }
 }

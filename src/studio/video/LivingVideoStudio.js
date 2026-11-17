@@ -154,29 +154,12 @@ export class LivingVideoStudio {
     leftTitle.className = 'living-hud-title';
     leftTitle.innerHTML = '⚡ CYBERPITER 2088 // <span class="text-cyan">БУДУЩЕЕ ПЕТЕРБУРГА</span>';
 
-    const controls = document.createElement('div');
-    controls.className = 'living-hud-controls';
-
-    // Sound toggle
-    this.soundBtn = document.createElement('button');
-    this.soundBtn.className = 'living-hud-btn living-hud-btn-sound';
-    this.soundBtn.innerHTML = '🔇';
-    this.soundBtn.setAttribute('title', 'Включить атмосферный звук студии');
-    this.soundBtn.addEventListener('click', () => this.toggleSound());
-    controls.appendChild(this.soundBtn);
-
-    // 2.5D Canvas toggle
-    if (typeof this.options.onSwitchMode === 'function') {
-      const modeBtn = document.createElement('button');
-      modeBtn.className = 'living-hud-btn living-hud-btn-mode';
-      modeBtn.innerHTML = '🎮 2.5D Холст';
-      modeBtn.setAttribute('title', 'Переключить в режим изометрической комнаты');
-      modeBtn.addEventListener('click', () => this.options.onSwitchMode());
-      controls.appendChild(modeBtn);
-    }
+    const statusBadge = document.createElement('div');
+    statusBadge.className = 'living-hud-badge';
+    statusBadge.innerHTML = '<span class="badge-dot live"></span> LIVE WORKSPACE';
 
     this.hudEl.appendChild(leftTitle);
-    this.hudEl.appendChild(controls);
+    this.hudEl.appendChild(statusBadge);
     this.container.appendChild(this.hudEl);
   }
 
@@ -442,24 +425,10 @@ export class LivingVideoStudio {
   }
 
   toggleSound() {
-    this.isMuted = !this.isMuted;
-    if (this.devVideoEl) {
-      this.devVideoEl.muted = this.isMuted;
-      if (!this.isMuted) {
-        this.devVideoEl.volume = 0.8;
-      }
-    }
-    if (this.catVideoEl) {
-      this.catVideoEl.muted = this.isMuted;
-      if (!this.isMuted) {
-        this.catVideoEl.volume = 0.5;
-      }
-    }
-    if (this.soundBtn) {
-      this.soundBtn.innerHTML = this.isMuted ? '🔇' : '🔊';
-      this.soundBtn.setAttribute('title', this.isMuted ? 'Включить звук студии' : 'Выключить звук студии');
-    }
-    this.showToast(this.isMuted ? '🔇 Звук выключен' : '🔊 Звук включен (дождь за окном, клавиатура и студия)');
+    // Sound disabled per request
+    this.isMuted = true;
+    if (this.devVideoEl) this.devVideoEl.muted = true;
+    if (this.catVideoEl) this.catVideoEl.muted = true;
   }
 
   showToast(message) {

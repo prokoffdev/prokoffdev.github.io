@@ -91,13 +91,8 @@ describe('Living Video Diorama & Single-Action Control Tests', () => {
       assert.equal(studio.phase, VideoPhase.CODING);
     }
 
-    // 5. Audio Toggle
+    // 5. Silent mode by default (sound controls removed)
     assert.equal(studio.isMuted, true);
-    studio.toggleSound();
-    assert.equal(studio.isMuted, false);
-    assert.equal(mockDevVideo.muted, false);
-    assert.equal(mockCatVideo.muted, false);
-
     studio.toggleSound();
     assert.equal(studio.isMuted, true);
     assert.equal(mockDevVideo.muted, true);

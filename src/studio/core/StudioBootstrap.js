@@ -60,20 +60,6 @@ export class StudioBootstrap {
   }
 
   getInitialMode() {
-    if (this.options.mode) {
-      return this.options.mode;
-    }
-    if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search);
-      const modeParam = urlParams.get('mode');
-      if (modeParam === 'canvas' || modeParam === 'video') {
-        return modeParam;
-      }
-      const stored = localStorage.getItem('prokoff_studio_mode');
-      if (stored === 'canvas' || stored === 'video') {
-        return stored;
-      }
-    }
     return StudioDisplayMode.VIDEO;
   }
 
@@ -144,12 +130,7 @@ export class StudioBootstrap {
     this.container.style.display = 'block';
 
     if (typeof window !== 'undefined' && typeof document !== 'undefined') {
-      this.currentMode = this.getInitialMode();
-      if (this.currentMode === StudioDisplayMode.CANVAS) {
-        return await this.launchCanvasStudio();
-      } else {
-        return await this.launchVideoStudio();
-      }
+      return await this.launchVideoStudio();
     }
 
     this.status = StudioStatus.INITIALIZED;
@@ -166,9 +147,7 @@ export class StudioBootstrap {
     this.container.style.position = 'relative';
 
     try {
-      this.videoStudio = new LivingVideoStudio(this.container, {
-        onSwitchMode: () => this.switchMode(StudioDisplayMode.CANVAS),
-      });
+      this.videoStudio = new LivingVideoStudio(this.container);
 
       this.currentMode = StudioDisplayMode.VIDEO;
       this.status = StudioStatus.INITIALIZED;
@@ -177,99 +156,21 @@ export class StudioBootstrap {
       return true;
     } catch (err) {
       console.error('[StudioBootstrap] Failed to launch Living Video Studio:', err);
-      // Fallback to Canvas mode
-      return await this.launchCanvasStudio();
-    }
-  }
-
-  async launchCanvasStudio() {
-    this.cleanupCurrentRuntime();
-
-    this.container.style.width = '100%';
-    this.container.style.maxWidth = '1600px';
-    this.container.style.margin = '80px auto 40px auto';
-    this.container.style.position = 'relative';
-
-    try {
-      const phaserModule = await import('phaser');
-      const Phaser = phaserModule.default || phaserModule;
-      const { StudioScene } = await import('../scenes/StudioScene.js');
-
-      const gameConfig = {
-        type: Phaser.AUTO,
-        parent: this.container,
-        width: 1600,
-        height: 1000,
-        backgroundColor: '#111923',
-        input: {
-          touch: {
-            capture: false,
-          },
-        },
-        scale: {
-          mode: Phaser.Scale.FIT,
-          autoCenter: Phaser.Scale.CENTER_BOTH,
-          width: 1600,
-          height: 1000,
-        },
-        scene: [StudioScene],
-      };
-
-      this.game = new Phaser.Game(gameConfig);
-
-      // Add switch button to video mode in canvas HUD
-      this.setupCanvasHudSwitcher();
-
-      const urlParams = new URLSearchParams(window.location.search);
-      const isDebug = urlParams.get('debug') === '1' || urlParams.get('debug') === 'true';
-      if (isDebug) {
-        this.createDebugToolbar();
-      }
-
-      this.currentMode = StudioDisplayMode.CANVAS;
-      this.status = StudioStatus.INITIALIZED;
-      this.container.setAttribute('data-studio-status', 'ready');
-      this.container.setAttribute('data-studio-mode', 'canvas');
-      return true;
-    } catch (err) {
-      console.error('[StudioBootstrap] Failed to launch Phaser game:', err);
       this.status = StudioStatus.ERROR;
       this.error = err;
-      this.container.style.display = 'none';
       return false;
     }
   }
 
-  setupCanvasHudSwitcher() {
-    if (!this.container || typeof document === 'undefined') return;
-
-    // Check periodically until HUD is mounted by StudioScene
-    const interval = setInterval(() => {
-      const hudNav = this.container.querySelector('.studio-hud-nav');
-      if (hudNav && !hudNav.querySelector('.studio-hud-switch-video')) {
-        const switchBtn = document.createElement('button');
-        switchBtn.type = 'button';
-        switchBtn.className = 'studio-hud-pill studio-hud-switch-video';
-        switchBtn.innerHTML = '<span>🎬 Живая диорама</span>';
-        switchBtn.title = 'Переключить в режим кинематографического видео';
-        switchBtn.onclick = () => this.switchMode(StudioDisplayMode.VIDEO);
-        hudNav.appendChild(switchBtn);
-        clearInterval(interval);
-      }
-    }, 200);
-
-    setTimeout(() => clearInterval(interval), 5000);
+  async launchCanvasStudio() {
+    // 2.5D Canvas room permanently removed in favor of Living Video Studio
+    return await this.launchVideoStudio();
   }
 
+  setupCanvasHudSwitcher() {}
+
   async switchMode(newMode) {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('prokoff_studio_mode', newMode);
-    }
-    if (newMode === StudioDisplayMode.VIDEO) {
-      await this.launchVideoStudio();
-    } else {
-      await this.launchCanvasStudio();
-    }
+    return await this.launchVideoStudio();
   }
 
   cleanupCurrentRuntime() {

@@ -240,7 +240,10 @@ export class LivingVideoStudio {
     const btn = document.createElement('button');
     btn.className = 'console-hud-btn';
     btn.textContent = text;
-    btn.addEventListener('click', onClick);
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      onClick(e);
+    });
     return btn;
   }
 
@@ -337,16 +340,16 @@ export class LivingVideoStudio {
     this.phase = VideoPhase.COFFEE;
 
     if (this.coffeeBtn) {
+      if (typeof this.coffeeBtn.blur === 'function') {
+        this.coffeeBtn.blur();
+      }
       this.coffeeBtn.disabled = true;
       this.coffeeBtn.classList.add('is-busy');
       this.coffeeBtn.textContent = '☕ Пьет кофе...';
     }
 
-    this.showToast('☕ Олег берет кружку DEV, делает глоток кофе и возвращается к коду');
-
     // Play full coffee sip animation once, then return smoothly to typing
     this.playDevVideo('assets/video/studio_dev_coffee', false, () => {
-      this.showToast('☕ Кофе выпит! Заряд бодрости получен');
       this.playDevIdleLoop();
       if (this.coffeeBtn) {
         this.coffeeBtn.disabled = false;
@@ -363,16 +366,16 @@ export class LivingVideoStudio {
     this.catPhase = 'WAKE';
 
     if (this.petCatBtn) {
+      if (typeof this.petCatBtn.blur === 'function') {
+        this.petCatBtn.blur();
+      }
       this.petCatBtn.disabled = true;
       this.petCatBtn.classList.add('is-busy');
       this.petCatBtn.textContent = '🐱 Просыпается...';
     }
 
-    this.showToast('🐱 NEOW-11 просыпается, зажигает лазурные LED-глаза и садится во весь рост!');
-
     // Play waking animation once
     this.playCatVideo('assets/video/studio_cat_wake', false, () => {
-      this.showToast('🐱 NEOW-11 активирован! Все фоновые AI-процессы в строю');
       this.catPhase = 'ALERT';
 
       // Stay upright for 3 seconds, then calmly return to sleep
@@ -433,16 +436,7 @@ export class LivingVideoStudio {
   }
 
   showToast(message) {
-    if (!this.toastEl) return;
-    if (this.toastTimeout) {
-      clearTimeout(this.toastTimeout);
-    }
-    this.toastEl.textContent = message;
-    this.toastEl.classList.add('is-visible');
-
-    this.toastTimeout = setTimeout(() => {
-      this.toastEl.classList.remove('is-visible');
-    }, 3000);
+    // Disabled to eliminate visual banner overlays popping over video frames
   }
 
   // Aliases for compatibility in tests

@@ -58,6 +58,23 @@
   pointer-events: none;
 }
 
+/* Preloaded Action Video Layer (Zero-lag, seamless crossfade) */
+.dev-video-action {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity;
+}
+
+.dev-video-action.is-active {
+  opacity: 1;
+}
+
 /* Video Status Badges */
 .cockpit-badge {
   position: absolute;

@@ -3,6 +3,7 @@
   position: relative;
   width: 100%;
   max-width: 1520px;
+  min-height: 580px;
   margin: 108px auto 40px auto;
   scroll-margin-top: 96px;
   padding: 0 16px;

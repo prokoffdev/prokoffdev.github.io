@@ -1,4 +1,5 @@
 import { validateSceneLayout, validateCollisionMap, validateHotspots, validateStateMachine } from './dataValidator.js';
+import { LivingVideoStudio } from '../video/LivingVideoStudio.js';
 import sceneLayoutData from '../../data/studio/scene-layout.json' with { type: 'json' };
 import collisionMapData from '../../data/studio/collision-map.json' with { type: 'json' };
 import hotspotsData from '../../data/studio/hotspots.json' with { type: 'json' };
@@ -165,7 +166,6 @@ export class StudioBootstrap {
     this.container.style.position = 'relative';
 
     try {
-      const { LivingVideoStudio } = await import('../video/LivingVideoStudio.js');
       this.videoStudio = new LivingVideoStudio(this.container, {
         onSwitchMode: () => this.switchMode(StudioDisplayMode.CANVAS),
       });

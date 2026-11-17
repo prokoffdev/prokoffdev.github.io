@@ -217,6 +217,7 @@ main, .site-header, .site-footer { position: relative; z-index: 1; }
 /* Header */
 
 .studio-mount {
+  min-height: 580px;
   margin: 108px auto 40px auto;
   scroll-margin-top: 96px;
 }

@@ -45,52 +45,31 @@ function splitText(el) {
 
 document.querySelectorAll("[data-split]").forEach(splitText);
 
-/* Hero reveal animation - Instant, smooth entrance without artificial blocking loader */
-const heroChars = document.querySelectorAll(".hero-title .char");
+/* Page reveal animation - Instant, smooth entrance */
+gsap.set(".site-header", { opacity: 0 });
 
-gsap.set(heroChars, { yPercent: 118 });
-gsap.set(".hero .eyebrow, .hero-meta > *", { y: 26, opacity: 0 });
-gsap.set(".site-header, .scroll-hint", { opacity: 0 });
+let pageRevealed = false;
 
-let heroRevealed = false;
-
-function revealHero() {
-  if (heroRevealed) return;
-  heroRevealed = true;
+function revealPage() {
+  if (pageRevealed) return;
+  pageRevealed = true;
   document.body.classList.add("is-loaded");
 
   if (reduceMotion) {
-    gsap.set(heroChars, { yPercent: 0 });
-    gsap.set(".hero .eyebrow, .hero-meta > *, .site-header, .scroll-hint", { y: 0, opacity: 1 });
+    gsap.set(".site-header", { opacity: 1 });
     return;
   }
 
-  gsap.to(heroChars, {
-    yPercent: 0,
-    duration: 1.1,
-    ease: "expo.out",
-    stagger: 0.028,
-  });
-
-  gsap.to(".hero .eyebrow, .hero-meta > *", {
-    y: 0,
+  gsap.to(".site-header", {
     opacity: 1,
-    duration: 0.9,
-    ease: "expo.out",
-    stagger: 0.09,
-    delay: 0.15,
-  });
-
-  gsap.to(".site-header, .scroll-hint", {
-    opacity: 1,
-    duration: 0.8,
+    duration: 0.6,
     ease: "power2.out",
-    delay: 0.25,
+    delay: 0.1,
   });
 }
 
 // Trigger instant reveal immediately on load
-revealHero();
+revealPage();
 
 /* Scroll reveals */
 document.querySelectorAll("[data-reveal]").forEach((el) => {

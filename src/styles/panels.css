@@ -413,8 +413,19 @@
   .studio-panel-body {
     padding: 16px 18px !important;
     /* Generous bottom padding inside scroll container so CTA buttons are never cut off by Safari URL bar or home bar */
-    padding-bottom: calc(84px + env(safe-area-inset-bottom, 16px)) !important;
+    padding-bottom: calc(48px + env(safe-area-inset-bottom, 16px)) !important;
     -webkit-overflow-scrolling: touch !important;
     overscroll-behavior: contain !important;
+  }
+
+  /* Physical flex item spacer guaranteeing full scroll clearance on all WebKit engines */
+  .studio-panel-body::after {
+    content: '' !important;
+    display: block !important;
+    width: 100% !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    flex-shrink: 0 !important;
+    pointer-events: none !important;
   }
 }

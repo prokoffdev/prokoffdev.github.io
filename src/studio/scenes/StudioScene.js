@@ -850,7 +850,7 @@ export class StudioScene extends Phaser.Scene {
     if (h.id === 'OBJ_AVATAR') color = 0xff454d;
     else if (h.id === 'OBJ_ROBOCAT') color = 0x00f0ff;
     else if (h.id === 'OBJ_PINBOARD') color = 0xfbbf24;
-    else if (h.id === 'OBJ_GAMEPAD') color = 0xa855f7;
+    else if (h.id === 'OBJ_GAMEPAD') color = 0x00e5ff;
     else if (h.id === 'OBJ_PHONE') color = 0x10b981;
     else if (h.id === 'OBJ_BOOKSHELF') color = 0x38bdf8;
 
@@ -966,18 +966,18 @@ export class StudioScene extends Phaser.Scene {
     // Code Lines Repository
     this.codeSnippets = [
       { text: "import { Engine } from 'studio';", color: '#38bdf8' },
-      { text: "const oleg = new Developer({", color: '#c084fc' },
+      { text: "const oleg = new Developer({", color: '#00e5ff' },
       { text: "  name: 'Oleg Prokofev',", color: '#4ade80' },
       { text: "  stack: ['React', 'TS', 'UE5'],", color: '#facc15' },
       { text: "  focus: 'High-Scale Systems',", color: '#4ade80' },
       { text: "  status: 'Living Diorama 60FPS',", color: '#38bdf8' },
-      { text: "});", color: '#c084fc' },
+      { text: "});", color: '#00e5ff' },
       { text: "async function compile() {", color: '#facc15' },
       { text: "  await oleg.buildProjects();", color: '#38bdf8' },
       { text: "  return oleg.isReadyForHire;", color: '#4ade80' },
       { text: "}", color: '#facc15' },
       { text: "console.log('Studio Online!');", color: '#38bdf8' },
-      { text: "export default oleg.start();", color: '#c084fc' },
+      { text: "export default oleg.start();", color: '#00e5ff' },
     ];
     this.codeSnippetIndex = 0;
     this.codeLineObjects = [];

@@ -46,7 +46,7 @@
 
 .cat-video-box {
   aspect-ratio: 9 / 16;
-  border-color: rgba(217, 70, 239, 0.25);
+  border-color: rgba(0, 229, 255, 0.22);
 }
 
 /* Base HTML5 Videos - 100% clean without overlays */
@@ -85,7 +85,7 @@
 }
 
 .cat-badge {
-  border-color: rgba(217, 70, 239, 0.35);
+  border-color: rgba(0, 229, 255, 0.35);
 }
 
 .badge-dot {
@@ -102,8 +102,8 @@
 }
 
 .badge-dot.cyan {
-  background: #d946ef;
-  box-shadow: 0 0 8px #d946ef;
+  background: #00e5ff;
+  box-shadow: 0 0 8px #00e5ff;
   animation: badgeBlink 2.4s infinite ease-in-out;
 }
 
@@ -127,7 +127,7 @@
 }
 
 .cat-console-hud {
-  border-color: rgba(217, 70, 239, 0.25);
+  border-color: rgba(0, 229, 255, 0.22);
 }
 
 .console-hud-actions {
@@ -164,25 +164,25 @@
 }
 
 .cat-console-hud .console-hud-btn:hover:not(:disabled) {
-  background: rgba(217, 70, 239, 0.2);
-  border-color: rgba(217, 70, 239, 0.65);
+  background: rgba(0, 229, 255, 0.16);
+  border-color: rgba(0, 229, 255, 0.6);
   color: #fff;
-  box-shadow: 0 0 14px rgba(217, 70, 239, 0.35);
+  box-shadow: 0 0 14px rgba(0, 229, 255, 0.3);
   transform: translateY(-1px);
 }
 
 .cat-console-hud .console-hud-btn.btn-featured {
-  background: rgba(217, 70, 239, 0.16);
-  border-color: rgba(217, 70, 239, 0.5);
+  background: rgba(0, 229, 255, 0.14);
+  border-color: rgba(0, 229, 255, 0.45);
   color: #fff;
   font-weight: 600;
-  box-shadow: 0 0 12px rgba(217, 70, 239, 0.2);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.25);
 }
 
 .cat-console-hud .console-hud-btn.btn-featured:hover:not(:disabled) {
-  background: rgba(217, 70, 239, 0.28);
-  border-color: #d946ef;
-  box-shadow: 0 0 18px rgba(217, 70, 239, 0.5);
+  background: rgba(0, 229, 255, 0.25);
+  border-color: #00e5ff;
+  box-shadow: 0 0 18px rgba(0, 229, 255, 0.5);
 }
 
 .console-hud-btn:active:not(:disabled) {
@@ -226,7 +226,7 @@
 }
 
 .diag-val.pink {
-  color: #d946ef;
+  color: #38bdf8;
 }
 
 /* Floating Toast Notification - Disabled to eliminate disruptive overlays */

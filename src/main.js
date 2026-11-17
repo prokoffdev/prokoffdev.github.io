@@ -326,7 +326,7 @@ if (canvas) {
         ? s.a
         : s.a + Math.sin(time * 0.001 * s.sp + s.ph) * 0.22;
       ctx.globalAlpha = Math.max(0.05, Math.min(1, alpha));
-      ctx.fillStyle = "#efe9ff";
+      ctx.fillStyle = "#e0f7ff";
       ctx.beginPath();
       ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
       ctx.fill();
@@ -353,9 +353,9 @@ if (canvas) {
       const ty = c.y - (c.vy / mag) * c.len;
 
       const grad = ctx.createLinearGradient(c.x, c.y, tx, ty);
-      grad.addColorStop(0, `rgba(238, 232, 255, ${0.9 * fade})`);
-      grad.addColorStop(0.35, `rgba(168, 85, 247, ${0.45 * fade})`);
-      grad.addColorStop(1, "rgba(168, 85, 247, 0)");
+      grad.addColorStop(0, `rgba(224, 247, 255, ${0.9 * fade})`);
+      grad.addColorStop(0.35, `rgba(0, 229, 255, ${0.5 * fade})`);
+      grad.addColorStop(1, "rgba(0, 229, 255, 0)");
 
       ctx.strokeStyle = grad;
       ctx.lineWidth = 2;
@@ -366,7 +366,7 @@ if (canvas) {
       ctx.stroke();
 
       ctx.globalAlpha = fade;
-      ctx.fillStyle = "#fbf7ff";
+      ctx.fillStyle = "#e0f7ff";
       ctx.beginPath();
       ctx.arc(c.x, c.y, 1.7, 0, Math.PI * 2);
       ctx.fill();

@@ -73,6 +73,9 @@ export class LivingVideoStudio {
     this.devVideoEl.setAttribute('webkit-playsinline', '');
     this.devVideoEl.poster = 'assets/video/studio_dev_poster.jpg';
     this.devVideoEl.preload = 'auto';
+    this.devVideoEl.addEventListener('loadeddata', () => {
+      this.devVideoEl.removeAttribute('poster');
+    }, { once: true });
 
     devVideoWrapper.appendChild(this.devVideoEl);
 
@@ -106,6 +109,9 @@ export class LivingVideoStudio {
     this.catVideoEl.setAttribute('webkit-playsinline', '');
     this.catVideoEl.poster = 'assets/video/studio_cat_poster.jpg';
     this.catVideoEl.preload = 'auto';
+    this.catVideoEl.addEventListener('loadeddata', () => {
+      this.catVideoEl.removeAttribute('poster');
+    }, { once: true });
 
     catVideoWrapper.appendChild(this.catVideoEl);
 
@@ -360,33 +366,38 @@ export class LivingVideoStudio {
       this.petCatBtn.textContent = '🐱 Просыпается...';
     }
 
-    // 1. Play waking animation once (cat sits upright with glowing cyan eyes)
-    this.playCatVideo('assets/video/studio_cat_wake', false, () => {
-      this.catPhase = 'ALERT';
-
-      if (this.petCatBtn) {
-        this.petCatBtn.textContent = '🐱 Бодрствует...';
-      }
-
-      // 2. Stay / freeze upright in the alert pose for 3.5 seconds
-      setTimeout(() => {
+    // Dynamic phase indicators based on real continuous playback time (15s unified sequence)
+    const timeUpdateHandler = () => {
+      if (!this.catVideoEl || !this.petCatBtn) return;
+      const t = this.catVideoEl.currentTime || 0;
+      if (t >= 10.3) {
         this.catPhase = 'SLEEP_TRANSITION';
+        this.petCatBtn.textContent = '🐱 Засыпает...';
+      } else if (t >= 7.5) {
+        this.catPhase = 'ALERT';
+        this.petCatBtn.textContent = '🐱 Бодрствует...';
+      } else {
+        this.catPhase = 'WAKE';
+        this.petCatBtn.textContent = '🐱 Просыпается...';
+      }
+    };
 
-        if (this.petCatBtn) {
-          this.petCatBtn.textContent = '🐱 Засыпает...';
-        }
+    if (this.catVideoEl) {
+      this.catVideoEl.ontimeupdate = timeUpdateHandler;
+    }
 
-        // 3. Smoothly lie back down into sleep pose
-        this.playCatVideo('assets/video/studio_cat_sleep_down', false, () => {
-          // 4. Return to seamless sleeping loop & re-enable button for new interactions
-          this.playCatSleepLoop();
-          if (this.petCatBtn) {
-            this.petCatBtn.disabled = false;
-            this.petCatBtn.classList.remove('is-busy');
-            this.petCatBtn.textContent = '🐱 Погладить кота';
-          }
-        });
-      }, 3500);
+    // Play full waking, alert hold, and smooth lying-down in ONE seamless continuous video
+    this.playCatVideo('assets/video/studio_cat_wake', false, () => {
+      if (this.catVideoEl) {
+        this.catVideoEl.ontimeupdate = null;
+      }
+      // Return to seamless sleeping loop & re-enable button for new interactions
+      this.playCatSleepLoop();
+      if (this.petCatBtn) {
+        this.petCatBtn.disabled = false;
+        this.petCatBtn.classList.remove('is-busy');
+        this.petCatBtn.textContent = '🐱 Погладить кота';
+      }
     });
   }
 

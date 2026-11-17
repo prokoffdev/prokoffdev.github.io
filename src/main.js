@@ -45,8 +45,7 @@ function splitText(el) {
 
 document.querySelectorAll("[data-split]").forEach(splitText);
 
-/* Loader → hero reveal */
-const loaderCount = document.querySelector(".loader-count");
+/* Hero reveal animation - Instant, smooth entrance without artificial blocking loader */
 const heroChars = document.querySelectorAll(".hero-title .char");
 
 gsap.set(heroChars, { yPercent: 118 });
@@ -59,6 +58,12 @@ function revealHero() {
   if (heroRevealed) return;
   heroRevealed = true;
   document.body.classList.add("is-loaded");
+
+  if (reduceMotion) {
+    gsap.set(heroChars, { yPercent: 0 });
+    gsap.set(".hero .eyebrow, .hero-meta > *, .site-header, .scroll-hint", { y: 0, opacity: 1 });
+    return;
+  }
 
   gsap.to(heroChars, {
     yPercent: 0,
@@ -73,41 +78,19 @@ function revealHero() {
     duration: 0.9,
     ease: "expo.out",
     stagger: 0.09,
-    delay: 0.35,
+    delay: 0.15,
   });
 
   gsap.to(".site-header, .scroll-hint", {
     opacity: 1,
     duration: 0.8,
     ease: "power2.out",
-    delay: 0.6,
+    delay: 0.25,
   });
 }
 
-// rAF is paused in background tabs, so the loader must never gate the page on it alone.
-setTimeout(revealHero, 3500);
-
-if (reduceMotion) {
-  revealHero();
-} else if (loaderCount) {
-  const counter = { v: 0 };
-  gsap.to(counter, {
-    v: 100,
-    duration: 1.3,
-    ease: "power2.inOut",
-    onUpdate: () => (loaderCount.textContent = Math.round(counter.v)),
-    onComplete: () => {
-      gsap.to(".loader", {
-        yPercent: -100,
-        duration: 0.9,
-        ease: "expo.inOut",
-        onComplete: revealHero,
-      });
-    },
-  });
-} else {
-  revealHero();
-}
+// Trigger instant reveal immediately on load
+revealHero();
 
 /* Scroll reveals */
 document.querySelectorAll("[data-reveal]").forEach((el) => {

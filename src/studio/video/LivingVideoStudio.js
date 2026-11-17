@@ -377,19 +377,33 @@ export class LivingVideoStudio {
       this.petCatBtn.textContent = '🐱 Просыпается...';
     }
 
-    // Play waking animation once
+    // 1. Play waking animation once (cat sits upright with glowing cyan eyes)
     this.playCatVideo('assets/video/studio_cat_wake', false, () => {
       this.catPhase = 'ALERT';
 
-      // Stay upright for 3 seconds, then calmly return to sleep
+      if (this.petCatBtn) {
+        this.petCatBtn.textContent = '🐱 Бодрствует...';
+      }
+
+      // 2. Stay / freeze upright in the alert pose for 3.5 seconds
       setTimeout(() => {
-        this.playCatSleepLoop();
+        this.catPhase = 'SLEEP_TRANSITION';
+
         if (this.petCatBtn) {
-          this.petCatBtn.disabled = false;
-          this.petCatBtn.classList.remove('is-busy');
-          this.petCatBtn.textContent = '🐱 Погладить кота';
+          this.petCatBtn.textContent = '🐱 Засыпает...';
         }
-      }, 3000);
+
+        // 3. Smoothly lie back down into sleep pose
+        this.playCatVideo('assets/video/studio_cat_sleep_down', false, () => {
+          // 4. Return to seamless sleeping loop & re-enable button for new interactions
+          this.playCatSleepLoop();
+          if (this.petCatBtn) {
+            this.petCatBtn.disabled = false;
+            this.petCatBtn.classList.remove('is-busy');
+            this.petCatBtn.textContent = '🐱 Погладить кота';
+          }
+        });
+      }, 3500);
     });
   }
 

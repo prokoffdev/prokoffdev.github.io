@@ -219,9 +219,12 @@ export class LivingVideoStudio {
     actions.className = 'console-hud-actions cat-actions';
 
     this.petCatBtn = this.createConsoleBtn('🐱 Погладить кота', () => this.triggerCat());
+    const miskaBtn = this.createConsoleBtn('🐾 Проект «Миска»', () => this.triggerCatMiska());
+    miskaBtn.classList.add('btn-featured');
     const askAiBtn = this.createConsoleBtn('🤖 Автоматизации & AI', () => this.contentPanel.open('assistant-help'));
 
     actions.appendChild(this.petCatBtn);
+    actions.appendChild(miskaBtn);
     actions.appendChild(askAiBtn);
 
     const diagnostics = document.createElement('div');
@@ -388,6 +391,16 @@ export class LivingVideoStudio {
         }
       }, 3000);
     });
+  }
+
+  triggerCatMiska() {
+    // Gently wake up cat if sleeping to create a responsive, living feel
+    if (!this.isCatBusy) {
+      this.triggerCat();
+    }
+    if (this.contentPanel) {
+      this.contentPanel.open('miska');
+    }
   }
 
   triggerBuild(target = 'projects') {

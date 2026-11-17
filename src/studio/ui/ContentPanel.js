@@ -139,7 +139,29 @@ export class ContentPanel {
           icon: '🚀',
           title: 'Проекты & Кейсы',
           render: () => `
-            <p style="font-size: 13px; color: #94a3b8; line-height: 1.55;">${projectsData.disclosure}</p>
+            <div class="studio-panel-card" style="border-color: rgba(0, 229, 255, 0.45); background: rgba(12, 28, 44, 0.75);">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                <span class="studio-badge" style="background: rgba(0, 229, 255, 0.18); color: #00e5ff; border-color: rgba(0, 229, 255, 0.5);">Реализовано & Запущено • Production</span>
+                <a href="https://miska-app.ru/" target="_blank" rel="noopener" style="color: #00e5ff; font-size: 12px; text-decoration: none; font-weight: 600;">miska-app.ru ↗</a>
+              </div>
+              <h4 style="margin-top: 8px; color: #fff;">🥣 «Миска» — сервис и Telegram Mini App для владельцев питомцев</h4>
+              <div class="studio-card-role">Full-Stack Разработка • PWA • Telegram WebApp API • Асинхронный бэкенд</div>
+              <p>Кроссплатформенное приложение и Telegram Mini App для заботливых владельцев питомцев. Сервис рассчитывает научную норму рациона, следит за запасами корма, контролирует водный баланс, ведет ветеринарный календарь и синхронизирует уход за питомцем между членами семьи в реальном времени.</p>
+              <div class="studio-tag-list">
+                <span class="studio-tag">Python (FastAPI)</span>
+                <span class="studio-tag">Async SQLAlchemy</span>
+                <span class="studio-tag">PostgreSQL</span>
+                <span class="studio-tag">Aiogram 3</span>
+                <span class="studio-tag">Vanilla JS (PWA)</span>
+                <span class="studio-tag">Offline-first</span>
+                <span class="studio-tag">Telegram WebApp API</span>
+              </div>
+              <a href="https://miska-app.ru/" target="_blank" rel="noopener" class="studio-cta-btn" style="margin-top: 12px;">
+                <span>🌐 Открыть сервис miska-app.ru ↗</span>
+              </a>
+            </div>
+
+            <p style="font-size: 13px; color: #94a3b8; line-height: 1.55; margin-top: 6px;">${projectsData.disclosure}</p>
             
             <div class="studio-panel-card">
               <span class="studio-badge">В активной разработке</span>
@@ -198,14 +220,29 @@ export class ContentPanel {
             <p style="font-size: 13px; color: #94a3b8; line-height: 1.55;">${skillsData.lede}</p>
 
             <div class="studio-panel-card">
-              <h4>🌐 01. Веб-разработка & Вёрстка</h4>
-              <p style="font-size: 13px;">Перевожу макеты в чистый семантичный код: адаптивность от 320px до широких мониторов без сбоев сетки в разных браузерах.</p>
+              <h4>⚡ 01. Бэкенд, Архитектура & Базы данных</h4>
+              <p style="font-size: 13px;">Проектирование надежных асинхронных API, работа с реляционными БД, миграции и бизнес-логика высокой доступности.</p>
               <div class="studio-tag-list">
-                <span class="studio-tag">HTML5 (Семантика)</span>
-                <span class="studio-tag">CSS3: Flexbox & Grid</span>
-                <span class="studio-tag">JavaScript (ES6+)</span>
-                <span class="studio-tag">Адаптив от 320px</span>
-                <span class="studio-tag">CSS-анимации</span>
+                <span class="studio-tag" style="border-color: rgba(0, 229, 255, 0.45); color: #fff;">Python</span>
+                <span class="studio-tag" style="border-color: rgba(0, 229, 255, 0.45); color: #fff;">FastAPI</span>
+                <span class="studio-tag" style="border-color: rgba(0, 229, 255, 0.45); color: #fff;">Async SQLAlchemy</span>
+                <span class="studio-tag" style="border-color: rgba(0, 229, 255, 0.45); color: #fff;">PostgreSQL</span>
+                <span class="studio-tag">Aiogram 3</span>
+                <span class="studio-tag">REST API</span>
+                <span class="studio-tag">SQLite</span>
+                <span class="studio-tag">Pydantic & Alembic</span>
+              </div>
+            </div>
+
+            <div class="studio-panel-card">
+              <h4>🌐 02. Веб-разработка, PWA & Telegram WebApps</h4>
+              <p style="font-size: 13px;">Быстрые кроссплатформенные веб-приложения и Telegram Mini Apps: от автономного offline-first PWA до сложных анимаций интерфейса.</p>
+              <div class="studio-tag-list">
+                <span class="studio-tag" style="border-color: rgba(0, 229, 255, 0.45); color: #fff;">Vanilla JS (ES6+)</span>
+                <span class="studio-tag" style="border-color: rgba(0, 229, 255, 0.45); color: #fff;">PWA / Offline-first</span>
+                <span class="studio-tag" style="border-color: rgba(0, 229, 255, 0.45); color: #fff;">Telegram WebApp API</span>
+                <span class="studio-tag">HTML5 & Семантика</span>
+                <span class="studio-tag">CSS3 (Grid / Flexbox)</span>
                 <span class="studio-tag">GSAP</span>
                 <span class="studio-tag">Vite</span>
                 <span class="studio-tag">Кроссбраузерность</span>
@@ -213,8 +250,8 @@ export class ContentPanel {
             </div>
 
             <div class="studio-panel-card">
-              <h4>📱 02. Мобильные приложения</h4>
-              <p style="font-size: 13px;">Собираю клиентские приложения для телефонов: экраны, навигация, подключение к серверам и сборка готовых установочных файлов.</p>
+              <h4>📱 03. Мобильные приложения & Кроссплатформа</h4>
+              <p style="font-size: 13px;">Сборка клиентских приложений для телефонов: экраны, навигация, подключение к серверам, сборка установочных пакетов и монетизация.</p>
               <div class="studio-tag-list">
                 <span class="studio-tag">Android Studio</span>
                 <span class="studio-tag">Java</span>
@@ -226,7 +263,7 @@ export class ContentPanel {
             </div>
 
             <div class="studio-panel-card">
-              <h4>🎨 03. Дизайн & Прототипирование</h4>
+              <h4>🎨 04. Дизайн & Прототипирование</h4>
               <p style="font-size: 13px;">Продумываю структуру и интерфейс до первой строчки кода: сетка, типографика, состояния кнопок и дизайн-системы в Figma.</p>
               <div class="studio-tag-list">
                 <span class="studio-tag">Figma</span>
@@ -234,18 +271,6 @@ export class ContentPanel {
                 <span class="studio-tag">Дизайн-системы</span>
                 <span class="studio-tag">UI-киты</span>
                 <span class="studio-tag">Интерактивные прототипы</span>
-              </div>
-            </div>
-
-            <div class="studio-panel-card">
-              <h4>⚙️ 04. Скрипты, Автоматизация & Данные</h4>
-              <p style="font-size: 13px;">Автоматизирую рутинные задачи, пишу парсеры, боты и бэкенд-скрипты для сбора и систематизации информации.</p>
-              <div class="studio-tag-list">
-                <span class="studio-tag">Python</span>
-                <span class="studio-tag">Telegram Bot API</span>
-                <span class="studio-tag">SQL-запросы к БД</span>
-                <span class="studio-tag">Парсинг данных</span>
-                <span class="studio-tag">REST интеграции</span>
               </div>
             </div>
 
@@ -333,6 +358,72 @@ export class ContentPanel {
           `,
         };
 
+      case 'miska':
+      case 'miska-app':
+        return {
+          icon: '🐾',
+          title: 'NEOW-11 // Проект «Миска»',
+          render: () => `
+            <div class="studio-avatar-badge cat-badge">
+              <img src="/assets/sprites/cat_avatar_clean.jpg" class="studio-avatar-img cat-img" alt="NEOW-11 Cyber-Cat" />
+              <div class="studio-avatar-info">
+                <h4 class="studio-avatar-name">NEOW-11</h4>
+                <span class="studio-role-pill cat-role">Амбассадор & AI Тестировщик</span>
+                <span class="studio-status-pill"><span class="badge-dot cyan"></span> Реализовано & Запущено // miska-app.ru</span>
+              </div>
+            </div>
+
+            <div class="studio-cat-bubble">
+              Мр-р-р! 🐾 Как кибер-кот студии, лично подтверждаю: это идеальный цифровой сервис для хвостатых и их хозяев!
+              Олег разработал <strong>«Миску»</strong> — умное кроссплатформенное приложение и Telegram Mini App для заботливых владельцев питомцев.
+            </div>
+
+            <div class="studio-panel-card cat-card" style="border-color: rgba(217, 70, 239, 0.45); background: rgba(28, 18, 42, 0.75);">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="studio-badge" style="background: rgba(217, 70, 239, 0.2); color: #f0abfc; border-color: rgba(217, 70, 239, 0.5);">Production • Live</span>
+                <a href="https://miska-app.ru/" target="_blank" rel="noopener" style="color: #f0abfc; font-size: 12px; text-decoration: none; font-weight: 600;">miska-app.ru ↗</a>
+              </div>
+              <h4 style="margin-top: 8px; color: #fff;">🥣 «Миска» — Забота о питомце нового поколения</h4>
+              <p style="font-size: 13px; line-height: 1.55; color: #cbd5e1; margin-top: 6px;">
+                Кроссплатформенное приложение и Telegram Mini App для заботливых владельцев питомцев. Сервис рассчитывает научную норму рациона, следит за запасами корма, контролирует водный баланс, ведет ветеринарный календарь и синхронизирует уход за питомцем между членами семьи в реальном времени.
+              </p>
+            </div>
+
+            <div class="studio-panel-card cat-card">
+              <h4>✨ Что умеет сервис:</h4>
+              <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #cbd5e1; line-height: 1.6;">
+                <li><strong>🥣 Научный расчёт рациона:</strong> вычисление калорийности и граммовок корма с учётом веса, возраста, породы и активности.</li>
+                <li><strong>📦 Контроль запасов корма:</strong> предиктивные уведомления до того, как закончится пачка.</li>
+                <li><strong>💧 Водный баланс:</strong> контроль гидратации для профилактики МКБ и здоровья почек.</li>
+                <li><strong>🩺 Ветеринарный календарь:</strong> график прививок, обработок от паразитов и посещений врача.</li>
+                <li><strong>👨‍👩‍👧‍👦 Семейная синхронизация в реальном времени:</strong> вся семья сразу видит статус кормления, предотвращая повторное кормление.</li>
+              </ul>
+            </div>
+
+            <div class="studio-panel-card cat-card">
+              <h4>⚙️ Технологический стек проекта:</h4>
+              <p style="font-size: 12.5px; color: #94a3b8; margin-bottom: 8px;">Отказоустойчивая асинхронная архитектура и мгновенный отклик интерфейса:</p>
+              <div class="studio-tag-list">
+                <span class="studio-tag" style="border-color: rgba(217, 70, 239, 0.5); color: #fff;">Python (FastAPI)</span>
+                <span class="studio-tag" style="border-color: rgba(217, 70, 239, 0.5); color: #fff;">Async SQLAlchemy</span>
+                <span class="studio-tag" style="border-color: rgba(217, 70, 239, 0.5); color: #fff;">PostgreSQL</span>
+                <span class="studio-tag" style="border-color: rgba(217, 70, 239, 0.5); color: #fff;">Aiogram 3</span>
+                <span class="studio-tag" style="border-color: rgba(217, 70, 239, 0.5); color: #fff;">Vanilla JS (PWA / Offline-first)</span>
+                <span class="studio-tag" style="border-color: rgba(217, 70, 239, 0.5); color: #fff;">Telegram WebApp API</span>
+              </div>
+            </div>
+
+            <a href="https://miska-app.ru/" target="_blank" rel="noopener" class="studio-cta-btn" style="background: linear-gradient(135deg, #d946ef, #8b5cf6);">
+              <span>🌐 Открыть сервис miska-app.ru →</span>
+            </a>
+
+            <button type="button" class="studio-cat-btn cat-btn-accent" data-cat-action="purr">
+              <span>🐾 Одобрено NEOW-11 (10/10 кошачьих лайков)</span>
+              <span>❤️</span>
+            </button>
+          `,
+        };
+
       case 'assistant-help':
       case 'automations':
       default:
@@ -350,7 +441,27 @@ export class ContentPanel {
             </div>
 
             <div class="studio-cat-bubble">
-              Мр-р! Я бортовой ИИ-ассистент студии. Моя специализация — умные чат-боты, нейросетевые агенты и автоматизация рутинных процессов. Вот в чём мы с Олегом поможем вашему бизнесу:
+              Мр-р! Я бортовой ИИ-ассистент студии. Моя специализация — умные чат-боты, Telegram Mini Apps и автоматизация процессов. Гордость нашего стека — сервис для питомцев «Миска»!
+            </div>
+
+            <div class="studio-panel-card cat-card" style="border-color: rgba(217, 70, 239, 0.4); background: rgba(30, 18, 44, 0.65);">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="studio-badge" style="background: rgba(217, 70, 239, 0.2); color: #f0abfc; border-color: rgba(217, 70, 239, 0.5);">Флагманский кейс</span>
+                <a href="https://miska-app.ru/" target="_blank" rel="noopener" style="color: #f0abfc; font-size: 12px; text-decoration: none; font-weight: 600;">miska-app.ru ↗</a>
+              </div>
+              <h4 style="margin-top: 6px; color: #fff;">🥣 Кроссплатформенное приложение и Telegram Mini App «Миска»</h4>
+              <p style="font-size: 13px;">Научный расчёт рациона, контроль запасов корма, водный баланс, ветеринарный календарь и семейная синхронизация ухода в реальном времени.</p>
+              <div class="studio-tag-list">
+                <span class="studio-tag">Python (FastAPI)</span>
+                <span class="studio-tag">Async SQLAlchemy</span>
+                <span class="studio-tag">PostgreSQL</span>
+                <span class="studio-tag">Aiogram 3</span>
+                <span class="studio-tag">Vanilla JS (PWA)</span>
+                <span class="studio-tag">Telegram WebApp API</span>
+              </div>
+              <a href="https://miska-app.ru/" target="_blank" rel="noopener" class="studio-cta-btn" style="margin-top: 10px; padding: 10px 14px; font-size: 12.5px;">
+                <span>🌐 Открыть кейс «Миска» (miska-app.ru) →</span>
+              </a>
             </div>
 
             <div class="studio-panel-card cat-card">

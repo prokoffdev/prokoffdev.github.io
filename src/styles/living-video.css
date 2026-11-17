@@ -171,6 +171,20 @@
   transform: translateY(-1px);
 }
 
+.cat-console-hud .console-hud-btn.btn-featured {
+  background: rgba(217, 70, 239, 0.16);
+  border-color: rgba(217, 70, 239, 0.5);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 0 12px rgba(217, 70, 239, 0.2);
+}
+
+.cat-console-hud .console-hud-btn.btn-featured:hover:not(:disabled) {
+  background: rgba(217, 70, 239, 0.28);
+  border-color: #d946ef;
+  box-shadow: 0 0 18px rgba(217, 70, 239, 0.5);
+}
+
 .console-hud-btn:active:not(:disabled) {
   transform: translateY(0);
 }

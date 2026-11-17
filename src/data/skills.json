@@ -35,29 +35,29 @@
     {
       "num": "03",
       "id": "languages",
-      "title": "Языки программирования",
-      "note": "Под каждую задачу беру подходящий язык: JavaScript для веба, Java и Dart для телефонов, Python для скриптов и разбора данных.",
+      "title": "Бэкенд и языки программирования",
+      "note": "Под каждую задачу беру подходящий стек: Python для асинхронных API и ботов, PostgreSQL для надежных баз данных, JavaScript для реактивного веба и PWA.",
       "items": [
-        "JavaScript (ES6+)",
-        "Python",
-        "Java",
-        "Dart",
-        "HTML и CSS",
-        "SQL-запросы к базе"
+        "Python (FastAPI, Async SQLAlchemy)",
+        "PostgreSQL и архитектура БД",
+        "Aiogram 3 (Telegram Боты & Mini Apps)",
+        "JavaScript (Vanilla JS, PWA, Offline-first)",
+        "Telegram WebApp API",
+        "Java и Dart для мобильных"
       ]
     },
     {
       "num": "04",
       "id": "mobile",
-      "title": "Мобильные приложения",
-      "note": "Собираю приложения под Android и iOS: экраны, навигация, работа с сервером и сборка готового файла для установки на телефон.",
+      "title": "Мобильные приложения & WebApps",
+      "note": "Собираю кроссплатформенные PWA, Telegram Mini Apps и нативные приложения под Android: экраны, навигация, работа с сервером и синхронизация в реальном времени.",
       "items": [
-        "Android Studio",
-        "Java — под Android",
+        "Telegram Mini Apps & WebApp API",
+        "Vanilla JS (PWA / Offline-first)",
+        "FastAPI & асинхронный бэкенд",
+        "Android Studio — сборка под Android",
         "Dart — общий код на две системы",
-        "Android и iOS",
-        "Адаптация под размеры экранов",
-        "Подключение к REST API"
+        "Синхронизация данных & REST API"
       ]
     },
     {

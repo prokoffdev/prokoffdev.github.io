@@ -125,5 +125,8 @@ describe('Living Video Diorama & Single-Action Control Tests', () => {
     studio.triggerRelax();
     assert.equal(studio.phase, VideoPhase.RELAX);
     assert.equal(mockModal.openedSection, 'about');
+
+    studio.triggerCatMiska();
+    assert.equal(mockModal.openedSection, 'miska');
   });
 });

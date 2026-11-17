@@ -22,7 +22,6 @@ export class LivingVideoStudio {
 
     // Video elements
     this.devVideoEl = null;
-    this.coffeeVideoEl = null;
     this.catVideoEl = null;
     this.videoEl = null; // Alias to devVideoEl
 
@@ -65,7 +64,7 @@ export class LivingVideoStudio {
     devVideoWrapper.className = 'cockpit-video-box dev-video-box';
 
     this.devVideoEl = document.createElement('video');
-    this.devVideoEl.className = 'living-studio-video dev-video dev-video-idle';
+    this.devVideoEl.className = 'living-studio-video dev-video';
     this.devVideoEl.autoplay = true;
     this.devVideoEl.muted = true;
     this.devVideoEl.loop = true;
@@ -78,30 +77,19 @@ export class LivingVideoStudio {
       this.devVideoEl.removeAttribute('poster');
     }, { once: true });
 
-    // Preloaded Action Video Layer (Coffee sip action: zero buffer pause, zero jerk)
-    this.coffeeVideoEl = document.createElement('video');
-    this.coffeeVideoEl.className = 'living-studio-video dev-video dev-video-action';
-    this.coffeeVideoEl.muted = true;
-    this.coffeeVideoEl.playsInline = true;
-    this.coffeeVideoEl.setAttribute('playsinline', '');
-    this.coffeeVideoEl.setAttribute('webkit-playsinline', '');
-    this.coffeeVideoEl.preload = 'auto';
-
-    const sourceCoffeeWebM = document.createElement('source');
-    sourceCoffeeWebM.src = 'assets/video/studio_dev_coffee.webm';
-    sourceCoffeeWebM.type = 'video/webm';
-    const sourceCoffeeMP4 = document.createElement('source');
-    sourceCoffeeMP4.src = 'assets/video/studio_dev_coffee.mp4';
-    sourceCoffeeMP4.type = 'video/mp4';
-    this.coffeeVideoEl.appendChild(sourceCoffeeWebM);
-    this.coffeeVideoEl.appendChild(sourceCoffeeMP4);
-    if (typeof this.coffeeVideoEl.load === 'function') {
-      this.coffeeVideoEl.load();
-    }
-
     devVideoWrapper.appendChild(this.devVideoEl);
-    devVideoWrapper.appendChild(this.coffeeVideoEl);
     devCol.appendChild(devVideoWrapper);
+
+    // Preload coffee action video assets for zero-delay instant response
+    if (typeof document !== 'undefined') {
+      ['assets/video/studio_dev_coffee.webm', 'assets/video/studio_dev_coffee.mp4'].forEach((src) => {
+        const link = document.createElement('link');
+        link.rel = 'preload';
+        link.as = 'video';
+        link.href = src;
+        document.head.appendChild(link);
+      });
+    }
 
     // Dev Control Console
     const devConsole = this.createDevConsole();
@@ -344,58 +332,15 @@ export class LivingVideoStudio {
       this.coffeeBtn.textContent = '☕ Пьет кофе...';
     }
 
-    if (this.coffeeVideoEl) {
-      this.coffeeVideoEl.currentTime = 0;
-      if (typeof this.coffeeVideoEl.play === 'function') {
-        this.coffeeVideoEl.play().catch(() => {});
+    // Play seamless coffee animation (reaching -> drinking -> returning)
+    this.playDevVideo('assets/video/studio_dev_coffee', false, () => {
+      this.playDevIdleLoop();
+      if (this.coffeeBtn) {
+        this.coffeeBtn.disabled = false;
+        this.coffeeBtn.classList.remove('is-busy');
+        this.coffeeBtn.textContent = '☕ Выпить кофе';
       }
-      this.coffeeVideoEl.classList.add('is-active');
-
-      let hasFadedOut = false;
-      const fadeOutAction = () => {
-        if (hasFadedOut) return;
-        hasFadedOut = true;
-        this.coffeeVideoEl.classList.remove('is-active');
-        setTimeout(() => {
-          if (typeof this.coffeeVideoEl.pause === 'function') {
-            this.coffeeVideoEl.pause();
-          }
-          this.coffeeVideoEl.currentTime = 0;
-        }, 400);
-
-        this.phase = VideoPhase.CODING;
-        this.isDevBusy = false;
-        if (this.coffeeBtn) {
-          this.coffeeBtn.disabled = false;
-          this.coffeeBtn.classList.remove('is-busy');
-          this.coffeeBtn.textContent = '☕ Выпить кофе';
-        }
-      };
-
-      const timeCheck = () => {
-        if (!this.coffeeVideoEl) return;
-        const dur = this.coffeeVideoEl.duration || 6.5;
-        const cur = this.coffeeVideoEl.currentTime || 0;
-        // Start smooth crossfade back 0.45s before end of the video
-        if (cur >= dur - 0.45) {
-          this.coffeeVideoEl.removeEventListener('timeupdate', timeCheck);
-          fadeOutAction();
-        }
-      };
-
-      this.coffeeVideoEl.addEventListener('timeupdate', timeCheck);
-      this.coffeeVideoEl.addEventListener('ended', fadeOutAction, { once: true });
-    } else {
-      // Fallback for non-browser / unit test mock environments
-      this.playDevVideo('assets/video/studio_dev_coffee', false, () => {
-        this.playDevIdleLoop();
-        if (this.coffeeBtn) {
-          this.coffeeBtn.disabled = false;
-          this.coffeeBtn.classList.remove('is-busy');
-          this.coffeeBtn.textContent = '☕ Выпить кофе';
-        }
-      });
-    }
+    });
   }
 
   triggerCat() {

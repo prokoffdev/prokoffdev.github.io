@@ -152,7 +152,7 @@ export class LivingVideoStudio {
 
     const leftTitle = document.createElement('div');
     leftTitle.className = 'living-hud-title';
-    leftTitle.innerHTML = '⚡ CYBERPUNK DUAL-STUDIO // <span class="text-cyan">LIVE WORKSPACE</span>';
+    leftTitle.innerHTML = '⚡ CYBERPITER 2088 // <span class="text-cyan">БУДУЩЕЕ ПЕТЕРБУРГА</span>';
 
     const controls = document.createElement('div');
     controls.className = 'living-hud-controls';

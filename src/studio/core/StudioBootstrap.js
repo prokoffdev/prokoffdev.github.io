@@ -160,8 +160,8 @@ export class StudioBootstrap {
     this.cleanupCurrentRuntime();
 
     this.container.style.width = '100%';
-    this.container.style.maxWidth = '1400px';
-    this.container.style.margin = '40px auto';
+    this.container.style.maxWidth = '1480px';
+    this.container.style.margin = '108px auto 40px auto';
     this.container.style.position = 'relative';
 
     try {

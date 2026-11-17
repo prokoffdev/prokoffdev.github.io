@@ -241,7 +241,8 @@ body.is-loaded .loader { display: none; }
 /* Header */
 
 .studio-mount {
-  margin: 104px auto 36px auto;
+  margin: 108px auto 40px auto;
+  scroll-margin-top: 96px;
 }
 
 .site-header {

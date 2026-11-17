@@ -18,7 +18,7 @@ export function initNavigation(reduceMotion) {
       const target = document.querySelector(link.getAttribute("href"));
       if (!target) return;
       e.preventDefault();
-      lenis.scrollTo(target, { offset: -70 });
+      lenis.scrollTo(target, { offset: -96 });
     });
   });
 

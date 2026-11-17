@@ -78,13 +78,6 @@ export class LivingVideoStudio {
     }, { once: true });
 
     devVideoWrapper.appendChild(this.devVideoEl);
-
-    // Dev Station Badge
-    const devBadge = document.createElement('div');
-    devBadge.className = 'cockpit-badge dev-badge';
-    devBadge.innerHTML = '<span class="badge-dot live"></span> OLEG // LEAD DEV WORKSTATION';
-    devVideoWrapper.appendChild(devBadge);
-
     devCol.appendChild(devVideoWrapper);
 
     // Dev Control Console
@@ -114,13 +107,6 @@ export class LivingVideoStudio {
     }, { once: true });
 
     catVideoWrapper.appendChild(this.catVideoEl);
-
-    // Cat Station Badge
-    const catBadge = document.createElement('div');
-    catBadge.className = 'cockpit-badge cat-badge';
-    catBadge.innerHTML = '<span class="badge-dot cyan"></span> NEOW-11 // AI AGENT DOCK';
-    catVideoWrapper.appendChild(catBadge);
-
     catCol.appendChild(catVideoWrapper);
 
     // Cat Control Console
@@ -160,12 +146,7 @@ export class LivingVideoStudio {
     leftTitle.className = 'living-hud-title';
     leftTitle.innerHTML = '⚡ CYBERPITER 2088 // <span class="text-cyan">БУДУЩЕЕ ПЕТЕРБУРГА</span>';
 
-    const statusBadge = document.createElement('div');
-    statusBadge.className = 'living-hud-badge';
-    statusBadge.innerHTML = '<span class="badge-dot live"></span> LIVE WORKSPACE';
-
     this.hudEl.appendChild(leftTitle);
-    this.hudEl.appendChild(statusBadge);
     this.container.appendChild(this.hudEl);
   }
 

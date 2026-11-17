@@ -476,12 +476,6 @@ main, .site-header, .site-footer { position: relative; z-index: 1; }
   width: 7px; height: 7px;
   border-radius: 50%;
   background: var(--accent);
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.35; transform: scale(1.5); }
 }
 
 .hero-title {

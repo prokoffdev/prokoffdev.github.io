@@ -416,11 +416,6 @@ export class ContentPanel {
             <a href="https://miska-app.ru/" target="_blank" rel="noopener" class="studio-cta-btn" style="background: linear-gradient(135deg, #00e5ff, #0284c7); color: #070a12; font-weight: 800; border: none; box-shadow: 0 0 20px rgba(0, 229, 255, 0.35);">
               <span>🌐 Открыть сервис miska-app.ru →</span>
             </a>
-
-            <button type="button" class="studio-cat-btn cat-btn-accent" data-cat-action="purr">
-              <span>🐾 Одобрено NEOW-11 (10/10 кошачьих лайков)</span>
-              <span>❤️</span>
-            </button>
           `,
         };
 
@@ -506,11 +501,6 @@ export class ContentPanel {
             <a href="https://t.me/oleherrr_kp?text=%D0%9F%D1%80%D0%B8%D0%B2%D0%B5%D1%82!%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%BE%D0%B1%D1%81%D1%83%D0%B4%D0%B8%D1%82%D1%8C%20%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%20%D0%B0%D0%B2%D1%82%D0%BE%D0%BC%D0%B0%D1%82%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D0%B8%2F%D0%B1%D0%BE%D1%82%D0%B0" target="_blank" rel="noopener" class="studio-cta-btn">
               <span>🚀 Обсудить проект автоматизации в Telegram →</span>
             </a>
-
-            <button type="button" class="studio-cat-btn cat-btn-accent" data-cat-action="purr">
-              <span>🐾 Активировать звуковой модуль (Purr!)</span>
-              <span>❤️</span>
-            </button>
           `,
         };
 
@@ -573,21 +563,6 @@ export class ContentPanel {
     const closeBtn = this.panelEl.querySelector('.studio-panel-close');
     if (closeBtn) {
       closeBtn.addEventListener('click', () => this.close());
-    }
-
-    // Hook cat purr action
-    const purrBtn = this.panelEl.querySelector('[data-cat-action="purr"]');
-    if (purrBtn) {
-      purrBtn.addEventListener('click', () => {
-        const bubble = this.panelEl.querySelector('.studio-cat-bubble');
-        if (bubble) {
-          bubble.innerHTML = 'Мур-р-р-р! ⚡❤️ Энергетический уровень на 100%! Всегда готов к автоматизации сложных задач!';
-          bubble.style.borderColor = '#00e5ff';
-        }
-        if (this.callbacks.onAction) {
-          this.callbacks.onAction('purr');
-        }
-      });
     }
   }
 
